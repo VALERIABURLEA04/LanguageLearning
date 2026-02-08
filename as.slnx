@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../WebApp/MyWebApplication/MyWebApplication.csproj" Id="646d0298-8929-45c2-8a09-44be4cd0e671" />
+  <Project Path="MyWebApplication.BusinessLogic/MyWebApplication.BusinessLogic.csproj" Id="b888e380-73b2-4acf-851b-f4d0119fe077" />
+  <Project Path="MyWebApplication.Domain/MyWebApplication.Domain.csproj" Id="63cb5072-0581-47de-a08d-32e5083866df" />
+  <Project Path="MyWebApplication.Helpers/MyWebApplication.Helpers.csproj" Id="5655a2b1-86b2-4d90-bcca-f0bf4dce5de8" />
+</Solution>
