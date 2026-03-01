@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace MyWebApplication.Domain.Interfaces
 {
-    internal class ILesson
+    public interface ILesson
     {
+        string Title { get; set; }
+        int DurationMinutes { get; set; }
     }
 }

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace MyWebApplication.Domain.Interfaces
 {
-    public interface ICourse
-    {
-        string Title { get; set; }
-        string Language { get; set; }
-    }
+    
+public interface IExercise
+{
+    string Title { get; set; }
+    int Points { get; set; }
+}
 }
