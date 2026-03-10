@@ -33,5 +33,16 @@ namespace MyWebApplication.BusinessLogic.Core
 
             return course;
         }
+
+        // Prototype Pattern
+        public Course CloneCourse(Course originalCourse)
+        {
+            Course clonedCourse = originalCourse.Clone();
+
+            clonedCourse.Title = originalCourse.Title + " (Copy)";
+
+            return clonedCourse;
+        }
     }
+
 }

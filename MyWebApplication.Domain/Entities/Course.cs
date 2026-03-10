@@ -22,5 +22,18 @@ namespace MyWebApplication.Domain.Entities
         public decimal Price { get; set; }
 
         public CourseType Type { get; set; }
+        public Course Clone()
+        {
+            return new Course
+            {
+                Id = this.Id,
+                Title = this.Title,
+                Description = this.Description,
+                Language = this.Language,
+                Level = this.Level,
+                Price = this.Price,
+                Type = this.Type
+            };
+        }
     }
 }
