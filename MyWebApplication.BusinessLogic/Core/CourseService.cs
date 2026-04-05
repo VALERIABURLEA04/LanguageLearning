@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MyWebApplication.BusinessLogic.Builders;
 using MyWebApplication.Domain.Entities;
+using MyWebApplication.Domain.Interfaces;
 
 namespace MyWebApplication.BusinessLogic.Core
 {
@@ -42,6 +43,15 @@ namespace MyWebApplication.BusinessLogic.Core
             clonedCourse.Title = originalCourse.Title + " (Copy)";
 
             return clonedCourse;
+        }
+
+        public void BuyCourse(Course course, IPaymentService paymentService)
+        {
+            Console.WriteLine($"Buying course: {course.Title}");
+
+            paymentService.Pay(course.Price);
+
+            Console.WriteLine("Course purchased successfully!");
         }
     }
 
