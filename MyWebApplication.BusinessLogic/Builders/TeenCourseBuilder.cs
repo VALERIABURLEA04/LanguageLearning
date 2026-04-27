@@ -1,4 +1,5 @@
-﻿using MyWebApplication.Domain.Entities;
+﻿using MyWebApplication.BusinessLogic.Flyweight;
+using MyWebApplication.Domain.Entities;
 using MyWebApplication.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace MyWebApplication.BusinessLogic.Builders
 
         public void SetLanguage(string language)
         {
-            course.Language = language;
+            course.Language = LanguageFactory.GetLanguage(language);
         }
 
         public void SetLevel(LanguageLevel level)

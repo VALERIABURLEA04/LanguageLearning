@@ -4,12 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MyWebApplication.Domain.Entities.Flyweight;
 
 namespace MyWebApplication.Domain.Entities.LearningFam
 {
+
+
     public class AdultEnglishCourse : ICourse
     {
         public string Title { get; set; } = "English for Adults";
-        public string Language { get; set; } = "English";
+
+        public Language Language { get; set; } = null!;
+
+        public string GetDescription()
+        {
+            return Title;
+        }
     }
 }

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-namespace MyWebApplication.Domain.Entities
+namespace MyWebApplication.BusinessLogic.Bridge
 {
-    public class Teacher : User
+    public interface ICourseDelivery
     {
+        string Deliver();
     }
 }
