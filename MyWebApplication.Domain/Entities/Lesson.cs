@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MyWebApplication.Domain.Entities.Memento;
 
-
 namespace MyWebApplication.Domain.Entities
 {
     public class Lesson  : ICourse
@@ -20,7 +19,7 @@ namespace MyWebApplication.Domain.Entities
         public string Description { get; set; }
 
         public Language Language { get; set; } //flyweight
-
+        
         public LessonMemento Save()
         {
             return new LessonMemento(Title, Description); // create a memento with the current state of the lesson
@@ -40,6 +39,8 @@ namespace MyWebApplication.Domain.Entities
             Console.WriteLine($"Lesson: {Title}");
         }
 
+
+      
 
     }
 }
