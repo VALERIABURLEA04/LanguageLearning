@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyWebApplication.Domain.Entities.Flyweight;
+using MyWebApplication.Domain.Entities.State;
 
 namespace MyWebApplication.Domain.Entities
 {
@@ -23,10 +24,35 @@ namespace MyWebApplication.Domain.Entities
 
         public decimal Price { get; set; }
 
+        private ICourseState _state; 
+
         public CourseType Type { get; set; }
 
 
         private List<ICourse> _items = new List<ICourse>(); //composite pattern
+
+        public Course() //state pattern
+        {
+            _state = new NotStartedState();
+        }
+
+
+        public void ChangeState(ICourseState state) //state pattern
+        {
+            _state = state;
+        }
+
+        public void OpenCourse() //state pattern
+        {
+            _state.OpenCourse(this);
+        }
+
+        public void CompleteCourse() //state pattern
+        {
+            _state.CompleteCourse(this);
+        }
+
+
 
         public void Add(ICourse component)
         {
