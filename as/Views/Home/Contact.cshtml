@@ -1,0 +1,49 @@
+@{
+    ViewData["Title"] = "Contact";
+    Layout = "_PublicLayout";
+}
+
+<section class="page-title" style="background-image: url('/assets/img/bg/home-bg2.jpg'); background-size: cover; background-position: center; padding: 100px 0; text-align: center; color: #fff;">
+    <div class="container">
+        <h1 style="font-size: 42px; font-weight: 700;">Get in touch</h1>
+        <p style="font-size: 16px; opacity: .9;">Questions about courses, enrolment, or partnerships — we're here.</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 col-sm-12">
+                <h2 style="margin-bottom: 24px;">Send us a message</h2>
+                <form method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3"><input type="text" class="form-control" name="name" placeholder="Your name" required></div>
+                        <div class="col-md-6 mb-3"><input type="email" class="form-control" name="email" placeholder="Your email" required></div>
+                    </div>
+                    <div class="mb-3"><input type="text" class="form-control" name="subject" placeholder="Subject"></div>
+                    <div class="mb-3"><textarea class="form-control" rows="6" name="message" placeholder="Tell us how we can help" required></textarea></div>
+                    <button type="submit" class="btn_one">Send message <i class="ti-arrow-top-right"></i></button>
+                </form>
+            </div>
+            <div class="col-lg-5 col-sm-12">
+                <h2 style="margin-bottom: 24px;">Contact info</h2>
+                <div class="sf_contact" style="margin-bottom: 18px;">
+                    <span class="ti-email" style="font-size: 22px; color: #ff6a3d;"></span>
+                    <p style="margin: 4px 0 0;"><b>Email</b><br>hello@lingua.app</p>
+                </div>
+                <div class="sf_contact" style="margin-bottom: 18px;">
+                    <span class="ti-mobile" style="font-size: 22px; color: #ff6a3d;"></span>
+                    <p style="margin: 4px 0 0;"><b>Phone</b><br>+40 720 000 000</p>
+                </div>
+                <div class="sf_contact" style="margin-bottom: 18px;">
+                    <span class="ti-map" style="font-size: 22px; color: #ff6a3d;"></span>
+                    <p style="margin: 4px 0 0;"><b>Office</b><br>Chișinău, Republica Moldova</p>
+                </div>
+                <div class="sf_contact">
+                    <span class="ti-time" style="font-size: 22px; color: #ff6a3d;"></span>
+                    <p style="margin: 4px 0 0;"><b>Hours</b><br>Mon–Fri 09:00–18:00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_AdminLayout";
+    var recent = ViewBag.RecentPurchases as List<sa.Models.Purchase>;
+}
+
+<div class="admin-topbar">
+    <h1>Dashboard</h1>
+    <span style="color: #6c757d;"><i class="fa-regular fa-calendar"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy")</span>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card c1">
+            <i class="fa-solid fa-book icon"></i>
+            <div class="label">Total Courses</div>
+            <div class="value">@ViewBag.TotalCourses</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card c2">
+            <i class="fa-solid fa-chalkboard icon"></i>
+            <div class="label">Total Lessons</div>
+            <div class="value">@ViewBag.TotalLessons</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card c3">
+            <i class="fa-solid fa-users icon"></i>
+            <div class="label">Total Students</div>
+            <div class="value">@ViewBag.TotalStudents</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card c4">
+            <i class="fa-solid fa-dollar-sign icon"></i>
+            <div class="label">Total Revenue</div>
+            <div class="value">$@ViewBag.TotalRevenue</div>
+        </div>
+    </div>
+</div>
+
+<div class="data-card">
+    <h3>Recent Purchases</h3>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (recent != null)
+            {
+                foreach (var p in recent)
+                {
+                    <tr>
+                        <td>#@p.Id</td>
+                        <td>@p.StudentName</td>
+                        <td>@p.CourseTitle</td>
+                        <td><b>$@p.Amount</b></td>
+                        <td>@p.PaymentMethod</td>
+                        <td>@p.PurchaseDate.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge-status badge-@p.Status.ToLower()">@p.Status</span></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>

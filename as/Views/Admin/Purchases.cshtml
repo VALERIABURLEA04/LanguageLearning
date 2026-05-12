@@ -1,0 +1,52 @@
+@model List<sa.Models.Purchase>
+@{
+    ViewData["Title"] = "Purchases";
+    Layout = "_AdminLayout";
+    var total = Model.Where(p => p.Status == "Completed").Sum(p => p.Amount);
+}
+
+<div class="admin-topbar">
+    <h1>Purchase History</h1>
+    <div style="display: flex; gap: 20px; align-items: center;">
+        <span style="color: #6c757d;">Revenue: <b style="color: #2e7d32;">$@total</b></span>
+        <a href="@Url.Action("CreatePurchase", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Add Purchase</a>
+    </div>
+</div>
+
+<div class="data-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Course</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>#@p.Id</td>
+                    <td>@p.StudentName</td>
+                    <td>@p.CourseTitle</td>
+                    <td><b>$@p.Amount</b></td>
+                    <td>@p.PaymentMethod</td>
+                    <td>@p.PurchaseDate.ToString("dd MMM yyyy, HH:mm")</td>
+                    <td><span class="badge-status badge-@p.Status.ToLower()">@p.Status</span></td>
+                    <td>
+                        <a href="@Url.Action("EditPurchase", "Admin", new { id = p.Id })" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i></a>
+                        <form asp-action="DeletePurchase" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Delete purchase #@p.Id?');">
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button type="submit" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

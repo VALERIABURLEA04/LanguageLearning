@@ -1,0 +1,44 @@
+@model List<sa.Models.LessonRow>
+@{
+    ViewData["Title"] = "Lessons";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-topbar">
+    <h1>Lessons</h1>
+    <a href="@Url.Action("CreateLesson", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Add Lesson</a>
+</div>
+
+<div class="data-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Course</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model)
+            {
+                <tr>
+                    <td>#@l.Id</td>
+                    <td><b>@l.Title</b></td>
+                    <td>@l.CourseTitle</td>
+                    <td><i class="fa-regular fa-clock"></i> @l.DurationMinutes min</td>
+                    <td><span class="badge-status badge-@l.Status.ToLower()">@l.Status</span></td>
+                    <td>
+                        <a href="@Url.Action("EditLesson", "Admin", new { id = l.Id })" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i></a>
+                        <form asp-action="DeleteLesson" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Delete lesson \'@l.Title\'?');">
+                            <input type="hidden" name="id" value="@l.Id" />
+                            <button type="submit" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,167 @@
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_PublicLayout";
+    var purchases = ViewBag.Purchases as List<sa.Models.Purchase> ?? new List<sa.Models.Purchase>();
+    var enrolled  = ViewBag.EnrolledCourses as List<sa.Models.CourseRow> ?? new List<sa.Models.CourseRow>();
+    var user = ViewBag.User as sa.Models.User;
+    var name = user?.Name ?? "User";
+    var email = user?.Email ?? "";
+    var memberSince = user?.CreatedAt ?? DateTime.Now;
+    var totalSpent = purchases.Where(p => p.Status == "Completed").Sum(p => p.Amount);
+    var totalLessons = enrolled.Sum(c => c?.Lessons ?? 0);
+}
+
+<section style="background: linear-gradient(135deg, #ff6a3d, #ff4081); padding: 80px 0 120px; color: #fff;">
+    <div class="container">
+        <h1 style="font-size: 36px; font-weight: 700; margin: 0;">My Profile</h1>
+        <p style="opacity: .9; margin: 6px 0 0;">Manage your account, enrolments and progress.</p>
+    </div>
+</section>
+
+<section style="padding: 0 0 80px; margin-top: -80px;">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-4 col-sm-12 mb-4">
+                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 32px; text-align: center;">
+                    <div style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, #ff6a3d, #ff4081); display: inline-flex; align-items: center; justify-content: center; font-size: 42px; color: #fff; font-weight: 700; margin-bottom: 16px;">
+                        @name.Substring(0, 1)
+                    </div>
+                    <h3 style="margin: 0; font-weight: 700;">@name</h3>
+                    <p style="color: #6c757d; margin: 4px 0 18px;">@email</p>
+                    <span style="background: #fff1eb; color: #ff6a3d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">@(user?.IsAdmin == true ? "Administrator" : "Student")</span>
+
+                    <hr style="margin: 24px 0;">
+
+                    <div style="text-align: left;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #555;">
+                            <span><i class="fa-regular fa-calendar"></i> Member since</span>
+                            <b>@memberSince.ToString("MMM yyyy")</b>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #555;">
+                            <span><i class="fa-solid fa-book"></i> Courses enrolled</span>
+                            <b>@enrolled.Count</b>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #555;">
+                            <span><i class="fa-solid fa-play"></i> Total lessons</span>
+                            <b>@totalLessons</b>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #555;">
+                            <span><i class="fa-solid fa-dollar-sign"></i> Total spent</span>
+                            <b>$@totalSpent</b>
+                        </div>
+                    </div>
+
+                    <a href="@Url.Action("Logout", "Home")" style="display: block; margin-top: 24px; padding: 12px; background: #fff; color: #ff6a3d; border: 1.5px solid #ff6a3d; border-radius: 8px; font-weight: 600; text-decoration: none;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sign out
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main -->
+            <div class="col-lg-8 col-sm-12">
+                <!-- Enrolled courses -->
+                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px; margin-bottom: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <h3 style="margin: 0; font-weight: 700;">My courses</h3>
+                        <a href="@Url.Action("Courses", "Home")" style="color: #ff6a3d; font-weight: 600; text-decoration: none;">Browse more <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+
+                    @if (!enrolled.Any())
+                    {
+                        <div style="text-align: center; padding: 40px 20px; color: #6c757d;">
+                            <i class="fa-solid fa-book-open" style="font-size: 48px; opacity: .3; margin-bottom: 12px;"></i>
+                            <p>You haven't enrolled in any course yet.</p>
+                            <a href="@Url.Action("Courses", "Home")" class="btn_one" style="display: inline-block; margin-top: 8px;">Find a course <i class="ti-arrow-top-right"></i></a>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var c in enrolled)
+                        {
+                            var progress = new Random(c.Id).Next(20, 95);
+                            <div style="display: flex; align-items: center; padding: 16px 0; border-bottom: 1px solid #f1f3f5;">
+                                <div style="width: 56px; height: 56px; border-radius: 10px; background: #fff1eb; color: #ff6a3d; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; margin-right: 16px;">@c.Level</div>
+                                <div style="flex: 1;">
+                                    <h5 style="margin: 0 0 6px; font-weight: 600;"><a href="@Url.Action("CourseDetail", "Home", new { id = c.Id })" style="color: #1f2a44; text-decoration: none;">@c.Title</a></h5>
+                                    <div style="background: #eef0f2; border-radius: 10px; height: 6px; overflow: hidden;">
+                                        <div style="background: linear-gradient(90deg, #ff6a3d, #ff4081); height: 100%; width: @(progress)%;"></div>
+                                    </div>
+                                    <small style="color: #6c757d;">@progress% complete · @c.Lessons lessons</small>
+                                </div>
+                                <a href="@Url.Action("CourseDetail", "Home", new { id = c.Id })" class="btn-action btn-edit" style="background: #fff1eb; color: #ff6a3d; padding: 8px 14px; border-radius: 8px; font-weight: 600; text-decoration: none;">Continue</a>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Purchase history -->
+                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px; margin-bottom: 24px;">
+                    <h3 style="margin: 0 0 18px; font-weight: 700;">Purchase history</h3>
+                    @if (!purchases.Any())
+                    {
+                        <p style="color: #6c757d;">No purchases yet.</p>
+                    }
+                    else
+                    {
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #f1f3f5;">
+                                    <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Course</th>
+                                    <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Date</th>
+                                    <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Amount</th>
+                                    <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in purchases)
+                                {
+                                    <tr style="border-bottom: 1px solid #f1f3f5;">
+                                        <td style="padding: 12px 10px;">@p.CourseTitle</td>
+                                        <td style="padding: 12px 10px; color: #6c757d;">@p.PurchaseDate.ToString("dd MMM yyyy")</td>
+                                        <td style="padding: 12px 10px;"><b>$@p.Amount</b></td>
+                                        <td style="padding: 12px 10px;">
+                                            <span style="background: @(p.Status == "Completed" ? "#e6f6ea" : p.Status == "Pending" ? "#fff4e0" : "#fde7e7"); color: @(p.Status == "Completed" ? "#2e7d32" : p.Status == "Pending" ? "#b26a00" : "#c62828"); padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">@p.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+                <!-- Settings -->
+                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px;">
+                    <h3 style="margin: 0 0 18px; font-weight: 700;">Account settings</h3>
+                    <form method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label style="font-weight: 500; font-size: 13px; color: #1f2a44;">Full name</label>
+                                <input type="text" value="@name" class="form-control" style="border-radius: 8px; padding: 11px 14px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="font-weight: 500; font-size: 13px; color: #1f2a44;">Email</label>
+                                <input type="email" value="@email" class="form-control" style="border-radius: 8px; padding: 11px 14px;">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label style="font-weight: 500; font-size: 13px; color: #1f2a44;">Native language</label>
+                                <select class="form-select" style="border-radius: 8px; padding: 11px 14px;">
+                                    <option>Romanian</option><option>English</option><option>Russian</option><option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label style="font-weight: 500; font-size: 13px; color: #1f2a44;">Learning goal</label>
+                                <select class="form-select" style="border-radius: 8px; padding: 11px 14px;">
+                                    <option>Career</option><option>Travel</option><option>Exam prep</option><option>Personal interest</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn_one" style="border: none;">Save changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

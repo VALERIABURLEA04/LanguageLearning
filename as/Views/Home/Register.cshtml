@@ -1,0 +1,57 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create Account - Lingua</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'DM Sans', sans-serif; background: #f6f7fb; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { width: 100%; max-width: 380px; background: #fff; padding: 36px 32px; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
+        .brand { text-align: center; font-size: 22px; font-weight: 700; color: #ff6a3d; margin-bottom: 24px; }
+        h1 { font-size: 22px; font-weight: 600; color: #1f2a44; margin: 0 0 4px; text-align: center; }
+        .subtitle { color: #6c757d; text-align: center; font-size: 14px; margin-bottom: 24px; }
+        label { display: block; font-size: 13px; font-weight: 500; color: #1f2a44; margin-bottom: 6px; }
+        input { width: 100%; padding: 11px 14px; border: 1px solid #e1e5ea; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 14px; }
+        input:focus { outline: none; border-color: #ff6a3d; }
+        button { width: 100%; padding: 12px; background: #ff6a3d; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #e85a2d; }
+        .footer { text-align: center; margin-top: 18px; font-size: 14px; color: #6c757d; }
+        .footer a { color: #ff6a3d; font-weight: 600; text-decoration: none; }
+        .error { background: #fde7e7; color: #c62828; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 18px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand">Lingua</div>
+        <h1>Create account</h1>
+        <p class="subtitle">Start learning today</p>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">@ViewBag.Error</div>
+        }
+
+        <form asp-action="Register" asp-controller="Home" method="post">
+            <label>Full name</label>
+            <input type="text" name="name" required autofocus>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required minlength="6">
+
+            <button type="submit">Sign up</button>
+        </form>
+
+        <div class="footer">
+            Already have an account? <a asp-action="Login" asp-controller="Home">Sign in</a>
+        </div>
+    </div>
+</body>
+</html>

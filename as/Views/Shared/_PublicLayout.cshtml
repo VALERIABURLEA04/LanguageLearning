@@ -1,0 +1,171 @@
+@{
+    var section = (ViewContext.RouteData.Values["action"] ?? "").ToString();
+    bool IsActive(string a) => string.Equals(a, section, StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>@ViewData["Title"] - Lingua</title>
+    <link rel="stylesheet" href="~/assets/bootstrap/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="~/assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" href="~/assets/fonts/themify-icons.css">
+    <link rel="stylesheet" href="~/assets/owlcarousel/css/owl.carousel.css">
+    <link rel="stylesheet" href="~/assets/owlcarousel/css/owl.theme.css">
+    <link rel="stylesheet" href="~/assets/css/jquery-simple-mobilemenu.css">
+    <link rel="stylesheet" href="~/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="~/assets/css/animate.css">
+    <link rel="stylesheet" href="~/assets/css/style.css">
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body data-spy="scroll" data-offset="80">
+
+    <div id="navigation" class="navbar-light bg-faded site-navigation">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-20 align-self-center">
+                    <div class="site-logo">
+                        <a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo.png" alt="Lingua"></a>
+                    </div>
+                </div>
+                @{
+                    var isAuth  = User?.Identity?.IsAuthenticated ?? false;
+                    var isAdmin = User?.IsInRole("Admin") ?? false;
+                    var userName = User?.Identity?.Name ?? "";
+                }
+                <div class="col-60 d-flex">
+                    <nav id="main-menu">
+                        <ul>
+                            <li><a href="@Url.Action("Index", "Home")" class="@(IsActive("Index") ? "active" : "")">Home</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")" class="@(IsActive("Courses") ? "active" : "")">Courses</a></li>
+                            <li><a href="@Url.Action("Contact", "Home")" class="@(IsActive("Contact") ? "active" : "")">Contact</a></li>
+                            @if (isAdmin)
+                            {
+                                <li><a href="@Url.Action("Index", "Admin")">Admin</a></li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+                <div class="col-20 d-none d-xl-block text-end align-self-center">
+                    @if (isAuth)
+                    {
+                        <a href="@Url.Action("Profile", "Home")" class="btn_one" style="display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-regular fa-user"></i> @userName.Split(' ')[0]
+                        </a>
+                        <a href="@Url.Action("Logout", "Home")" title="Sign out" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; background: #f4f6fb; color: #6c757d; text-decoration: none; vertical-align: middle;">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Home")" class="header-btn">Sign In</a>
+                        <a href="@Url.Action("Register", "Home")" class="btn_one">Sign Up</a>
+                    }
+                </div>
+                <ul class="mobile_menu">
+                    <li><a href="@Url.Action("Index", "Home")">Home</a></li>
+                    <li><a href="@Url.Action("Courses", "Home")">Courses</a></li>
+                    <li><a href="@Url.Action("Contact", "Home")">Contact</a></li>
+                    @if (isAuth)
+                    {
+                        <li><a href="@Url.Action("Profile", "Home")">Profile</a></li>
+                        <li><a href="@Url.Action("Logout", "Home")">Sign out</a></li>
+                    }
+                    else
+                    {
+                        <li><a href="@Url.Action("Login", "Home")">Sign in</a></li>
+                        <li><a href="@Url.Action("Register", "Home")">Sign up</a></li>
+                    }
+                    @if (isAdmin)
+                    {
+                        <li><a href="@Url.Action("Index", "Admin")">Admin</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @RenderBody()
+
+    <div class="footer section-padding">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-sm-6 col-xs-12">
+                    <div class="single_footer">
+                        <a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo.png" alt="Lingua"></a>
+                        <p>Lingua helps learners master English — from absolute beginners to Cambridge C2. Speak with confidence in weeks, not years.</p>
+                        <div class="social_profile">
+                            <ul>
+                                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-youtube"></i></a></li>
+                                <li><a href="#"><i class="fa-brands fa-linkedin-in"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-sm-6 col-xs-12">
+                    <div class="single_footer">
+                        <h4>Explore</h4>
+                        <ul>
+                            <li><a href="@Url.Action("Courses", "Home")">Courses</a></li>
+                            <li><a href="@Url.Action("Contact", "Home")">Contact</a></li>
+                            <li><a href="@Url.Action("Login", "Home")">Sign in</a></li>
+                            <li><a href="@Url.Action("Register", "Home")">Sign up</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-xs-12">
+                    <div class="single_footer">
+                        <h4>Levels</h4>
+                        <ul>
+                            <li><a href="@Url.Action("Courses", "Home")">Beginner — A1</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Elementary — A2</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Intermediate — B1/B2</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Advanced — C1/C2</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 col-xs-12">
+                    <div class="single_footer">
+                        <h4>Get in touch</h4>
+                        <div class="sf_contact"><span class="ti-email"></span><p>hello@lingua.app</p></div>
+                        <div class="sf_contact"><span class="ti-mobile"></span><p>+40 720 000 000</p></div>
+                        <div class="sf_contact"><span class="ti-map"></span><p>Chișinău, Republica Moldova</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="foot_copy">
+        <div class="footer_copyright">
+            <p>&copy; @DateTime.Now.Year Lingua. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script src="~/assets/js/jquery-1.12.4.min.js"></script>
+    <script src="~/assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/assets/js/modernizr-2.8.3.min.js"></script>
+    <script src="~/assets/js/jquery-simple-mobilemenu.js"></script>
+    <script src="~/assets/owlcarousel/js/owl.carousel.min.js"></script>
+    <script src="~/assets/js/jquery.magnific-popup.min.js"></script>
+    <script src="~/assets/js/jquery.inview.min.js"></script>
+    <script src="~/assets/js/scrolltopcontrol.js"></script>
+    <script src="~/assets/js/wow.min.js"></script>
+    <script src="~/assets/js/scripts.js"></script>
+    @if (TempData["AuthToken"] is string tok && !string.IsNullOrEmpty(tok))
+    {
+        <script>localStorage.setItem('lingua_token', @Html.Raw(System.Text.Json.JsonSerializer.Serialize(tok)));</script>
+    }
+    @if (TempData["ClearToken"] is bool clr && clr)
+    {
+        <script>localStorage.removeItem('lingua_token');</script>
+    }
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

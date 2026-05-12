@@ -1,0 +1,40 @@
+@model List<sa.Models.CourseRow>
+@{
+    ViewData["Title"] = "Courses";
+    Layout = "_PublicLayout";
+    var imgs = new[] { "1", "2", "3", "4", "5", "6" };
+}
+
+<section class="page-title" style="background-image: url('/assets/img/bg/home-bg.jpg'); background-size: cover; background-position: center; padding: 100px 0; text-align: center; color: #fff;">
+    <div class="container">
+        <h1 style="font-size: 42px; font-weight: 700;">English courses</h1>
+        <p style="font-size: 16px; opacity: .9;">All levels — from your first word to Cambridge proficiency.</p>
+    </div>
+</section>
+
+<section class="course_area section-padding">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2>@Model.Count courses available</h2>
+            <p>Each track is CEFR-aligned and taught by certified tutors.</p>
+        </div>
+        <div class="row">
+            @{ int idx = 0; }
+            @foreach (var c in Model)
+            {
+                <div class="col-lg-4 col-sm-6 col-xs-12 wow fadeInUp" data-wow-duration="1s" data-wow-delay="0.1s">
+                    <div class="single_blog" style="margin-bottom: 30px;">
+                        <img src="~/assets/img/course/@(imgs[idx % imgs.Length]).png" class="img-fluid" alt="@c.Title" />
+                        <div class="content_box">
+                            <span><b>@c.Level</b> · @c.Language · @c.Lessons lessons</span>
+                            <h2><a href="@Url.Action("CourseDetail", "Home", new { id = c.Id })">@c.Title</a></h2>
+                            <p><span class="ti-user"></span> @c.Students students &nbsp; <span class="ti-tag"></span> <b>$@c.Price</b></p>
+                            <a class="btn_one" href="@Url.Action("CourseDetail", "Home", new { id = c.Id })">View lessons <i class="ti-arrow-top-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+                idx++;
+            }
+        </div>
+    </div>
+</section>

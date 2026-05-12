@@ -1,0 +1,94 @@
+@model sa.Models.CourseRow
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "_PublicLayout";
+    var lessons = ViewBag.Lessons as List<sa.Models.LessonRow> ?? new List<sa.Models.LessonRow>();
+    var published = lessons.Where(l => l.Status == "Published").ToList();
+    var totalMinutes = published.Sum(l => l.DurationMinutes);
+}
+
+<section class="page-title" style="background-image: url('/assets/img/bg/home-bg.jpg'); background-size: cover; background-position: center; padding: 100px 0; color: #fff;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <span style="background: rgba(255,255,255,.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">@Model.Level · @Model.Language</span>
+                <h1 style="font-size: 42px; font-weight: 700; margin-top: 16px;">@Model.Title</h1>
+                <p style="font-size: 16px; opacity: .9;">
+                    <span class="ti-user"></span> @Model.Students students enrolled &nbsp;
+                    <span class="ti-book"></span> @Model.Lessons lessons total &nbsp;
+                    <span class="ti-time"></span> @totalMinutes min published
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-sm-12">
+                @if (TempData["Msg"] != null)
+                {
+                    <div style="background: #e6f6ea; color: #2e7d32; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px;">
+                        <i class="fa-solid fa-circle-check"></i> @TempData["Msg"]
+                    </div>
+                }
+
+                <h2 style="margin-bottom: 18px;">About this course</h2>
+                <p style="color: #555; line-height: 1.7;">
+                    The <b>@Model.Title</b> track is a CEFR <b>@Model.Level</b> programme covering @Model.Lessons lessons.
+                    Each session blends interactive grammar, vocabulary in context, and live speaking practice with your tutor.
+                    By the end, you will hold confident conversations at the @Model.Level level and be ready for the next stage.
+                </p>
+
+                <h2 style="margin: 36px 0 18px;">Lessons (@published.Count published)</h2>
+
+                @if (!published.Any())
+                {
+                    <div style="background: #fff8e6; border: 1px solid #ffe0a3; padding: 18px; border-radius: 10px; color: #8a5a00;">
+                        <i class="fa-solid fa-circle-info"></i> No published lessons yet — your tutor will release them as you progress.
+                    </div>
+                }
+                else
+                {
+                    <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.05); overflow: hidden;">
+                        @{ int n = 1; }
+                        @foreach (var l in published)
+                        {
+                            <div style="display: flex; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f1f3f5;">
+                                <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff1eb; color: #ff6a3d; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 16px;">@n</div>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #1f2a44;">@l.Title</h4>
+                                    <small style="color: #6c757d;"><span class="ti-time"></span> @l.DurationMinutes min · <span class="ti-video-camera"></span> Video + practice</small>
+                                </div>
+                                <a href="#" style="color: #ff6a3d; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-play"></i> Preview</a>
+                            </div>
+                            n++;
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-4 col-sm-12">
+                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px; position: sticky; top: 100px;">
+                    <div style="font-size: 36px; font-weight: 700; color: #1f2a44;">$@Model.Price</div>
+                    <p style="color: #6c757d; margin-bottom: 22px;">Lifetime access · cancel anytime</p>
+
+                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })" class="btn_one" style="display: block; text-align: center; margin-bottom: 12px;">Start learning now <i class="ti-arrow-top-right"></i></a>
+                    <a href="@Url.Action("Courses", "Home")" style="display: block; text-align: center; padding: 12px; color: #6c757d; text-decoration: none; font-weight: 500;">Browse all courses</a>
+
+                    <hr style="margin: 22px 0;">
+
+                    <h5 style="font-weight: 700; margin-bottom: 14px;">This course includes</h5>
+                    <ul style="list-style: none; padding: 0; color: #555;">
+                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> @Model.Lessons total lessons</li>
+                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Live tutor feedback</li>
+                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Downloadable resources</li>
+                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Completion certificate</li>
+                        <li><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Mobile + desktop access</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

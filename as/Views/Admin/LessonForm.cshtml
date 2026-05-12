@@ -1,0 +1,49 @@
+@model sa.Models.LessonRow
+@{
+    ViewData["Title"] = ViewBag.FormTitle as string ?? "Lesson";
+    Layout = "_AdminLayout";
+    var isEdit = Model.Id > 0;
+    var action = isEdit ? "EditLesson" : "CreateLesson";
+    var courses = ViewBag.CourseTitles as List<string> ?? new List<string>();
+}
+
+<div class="admin-topbar">
+    <h1>@ViewBag.FormTitle</h1>
+    <a href="@Url.Action("Lessons", "Admin")" class="btn-action btn-edit"><i class="fa-solid fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="form-card">
+    <form asp-action="@action" asp-controller="Admin" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CourseTitle">Course</label>
+            <select asp-for="CourseTitle" class="form-select">
+                @foreach (var t in courses)
+                {
+                    <option value="@t" selected="@(t == Model.CourseTitle)">@t</option>
+                }
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="DurationMinutes">Duration (minutes)</label>
+                <input asp-for="DurationMinutes" type="number" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="Status"></label>
+                <select asp-for="Status" class="form-select">
+                    <option>Published</option><option>Draft</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary-orange"><i class="fa-solid fa-floppy-disk"></i> @(isEdit ? "Update" : "Create")</button>
+    </form>
+</div>
