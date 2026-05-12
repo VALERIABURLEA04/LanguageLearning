@@ -1,20 +1,18 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-
-
 namespace Controllers;
+
 public class HomeController : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
+    public IActionResult Index() => View();
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+    public IActionResult Privacy() => View();
 
-    
+    public IActionResult Courses() => View();
+
+    public IActionResult Contact() => View();
+
+    public IActionResult Login() => View();
+
+    public IActionResult Register() => View();
 }

@@ -1,4 +1,4 @@
-namespace aModels;
+namespace sa.Models;
 
 public class ErrorViewModel
 {
