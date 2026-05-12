@@ -15,7 +15,10 @@ namespace MyWebApplication.BusinessLogic.Bridge
         {
             _delivery = delivery;
         }
-
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <returns></returns>
         public abstract string GetCourseInfo();
     }
 }
