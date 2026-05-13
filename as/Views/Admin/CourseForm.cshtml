@@ -81,11 +81,7 @@
                 <label asp-for="OldPrice">Preț vechi (MDL)</label>
                 <input asp-for="OldPrice" type="number" step="1" min="0" class="form-control" placeholder="0 = fără reducere" />
             </div>
-            <div class="col-md-3 mb-3">
-                <label asp-for="Lessons">Număr lecții</label>
-                <input asp-for="Lessons" type="number" min="0" class="form-control" placeholder="0" />
-            </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-4 mb-3">
                 <label asp-for="Students">Studenți înscriși</label>
                 <input asp-for="Students" type="number" min="0" class="form-control" placeholder="0" />
             </div>
@@ -103,8 +99,8 @@
                 <div class="d-flex gap-2 align-items-center">
                     <input type="color" id="colorPicker" value="@bg"
                            style="width:46px;height:40px;border:1px solid #ddd;border-radius:8px;padding:2px;cursor:pointer;" />
-                    <input asp-for="BackgroundColor" type="text" class="form-control" id="colorText"
-                           placeholder="#FF6B35" style="font-family:monospace;" />
+                    <input name="BackgroundColor" type="text" class="form-control" id="colorText"
+                           value="@bg" placeholder="#FF6B35" style="font-family:monospace;" />
                 </div>
                 <small style="color:#6c757d;">Culoarea cardului de pe pagina principală</small>
             </div>

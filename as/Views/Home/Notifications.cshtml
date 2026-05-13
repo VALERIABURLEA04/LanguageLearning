@@ -1,0 +1,47 @@
+@model IReadOnlyList<MyWebApplication.BusinessLogic.Core.Dtos.NotificationDto>
+@{
+    ViewData["Title"] = "Notificări";
+    Layout = "_PublicLayout";
+}
+
+<section style="background:linear-gradient(135deg,#FF6B35 0%,#FF6B35 60%,rgba(0,0,0,.18) 100%);padding:60px 0 40px;color:#fff;">
+    <div class="container">
+        <h1 style="font-size:32px;font-weight:700;margin:0;"><i class="fa-solid fa-bell" style="margin-right:10px;"></i>Notificări</h1>
+        <p style="opacity:.85;margin-top:6px;font-size:15px;">@Model.Count notificări totale</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container" style="max-width:700px;">
+        @if (!Model.Any())
+        {
+            <div style="text-align:center;padding:60px 0;color:#6c757d;">
+                <i class="fa-solid fa-bell-slash" style="font-size:48px;margin-bottom:18px;display:block;opacity:.4;"></i>
+                <p style="font-size:16px;">Nicio notificare momentan.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var n in Model)
+            {
+                <div style="background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);
+                            padding:18px 22px;margin-bottom:14px;display:flex;align-items:flex-start;gap:14px;">
+                    <div style="width:40px;height:40px;border-radius:50%;background:#fff0eb;color:#FF6B35;
+                                display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="color:#1f2a44;font-weight:500;">@n.Message</div>
+                        <small style="color:#9aa0a6;">@n.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")</small>
+                    </div>
+                </div>
+            }
+        }
+
+        <div style="text-align:center;margin-top:24px;">
+            <a href="@Url.Action("Courses", "Home")" style="color:#6c757d;text-decoration:none;font-size:14px;">
+                <i class="ti-arrow-left"></i> Înapoi la cursuri
+            </a>
+        </div>
+    </div>
+</section>

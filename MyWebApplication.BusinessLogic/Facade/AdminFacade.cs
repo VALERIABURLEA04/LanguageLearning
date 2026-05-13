@@ -1,6 +1,7 @@
 using MyWebApplication.BusinessLogic.Command;
 using MyWebApplication.BusinessLogic.Core.Dtos;
 using MyWebApplication.BusinessLogic.Interfaces;
+using MyWebApplication.BusinessLogic.Observer;
 
 namespace MyWebApplication.BusinessLogic.Facade;
 
@@ -11,24 +12,27 @@ namespace MyWebApplication.BusinessLogic.Facade;
 /// </summary>
 public class AdminFacade
 {
-    private readonly ICourseStore _courses;
-    private readonly ILessonStore _lessons;
+    private readonly ICourseStore   _courses;
+    private readonly ILessonStore   _lessons;
     private readonly IPurchaseStore _purchases;
-    private readonly IUserStore _users;
+    private readonly IUserStore     _users;
     private readonly CommandInvoker _invoker;
+    private readonly CourseNotifier _notifier;
 
     public AdminFacade(
         ICourseStore courses,
         ILessonStore lessons,
         IPurchaseStore purchases,
         IUserStore users,
-        CommandInvoker invoker)
+        CommandInvoker invoker,
+        CourseNotifier notifier)
     {
-        _courses = courses;
-        _lessons = lessons;
+        _courses   = courses;
+        _lessons   = lessons;
         _purchases = purchases;
-        _users = users;
-        _invoker = invoker;
+        _users     = users;
+        _invoker   = invoker;
+        _notifier  = notifier;
     }
 
     // ---------- READ ----------
@@ -57,6 +61,7 @@ public class AdminFacade
     {
         var cmd = new CreateCourseCommand(_courses, input);
         _invoker.ExecuteCommand(cmd);
+        _notifier.CourseAdded(input.Title);
         return cmd.Created!;
     }
     public bool UpdateCourse(CourseDto input)
@@ -76,6 +81,7 @@ public class AdminFacade
     {
         var cmd = new CreateLessonCmd(_lessons, input);
         _invoker.ExecuteCommand(cmd);
+        _notifier.LessonAdded(input.CourseTitle, input.Title);
         return cmd.Created!;
     }
     public bool UpdateLesson(LessonDto input)

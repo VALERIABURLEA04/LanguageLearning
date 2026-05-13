@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Află nivelul tău de engleză";
+    Layout = "_PublicLayout";
+}
+
+<section style="background:linear-gradient(135deg,#7B2FBE 0%,#1B3A6B 100%);padding:70px 0 50px;color:#fff;">
+    <div class="container text-center">
+        <span style="background:rgba(255,255,255,.18);padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;">
+            <i class="fa-solid fa-graduation-cap"></i> Test gratuit · 15 întrebări
+        </span>
+        <h1 style="font-size:40px;font-weight:700;margin:18px 0 10px;">Află nivelul tău de engleză</h1>
+        <p style="font-size:16px;opacity:.9;">Alege răspunsul corect pentru fiecare întrebare. La final vei primi nivelul CEFR (A1–C2).</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container" style="max-width:760px;">
+
+        <div id="quiz-form">
+
+            <!-- Progress -->
+            <div style="margin-bottom:32px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:#6c757d;margin-bottom:8px;">
+                    <span id="progress-label">Întrebarea 1 din 15</span>
+                    <span id="progress-pct">0%</span>
+                </div>
+                <div style="background:#e9ecef;border-radius:10px;height:8px;overflow:hidden;">
+                    <div id="progress-bar" style="background:linear-gradient(90deg,#7B2FBE,#FF6B35);height:100%;width:0;transition:width .3s;border-radius:10px;"></div>
+                </div>
+            </div>
+
+            @{
+                var questions = new[]
+                {
+                    new {
+                        Q    = "What ___ your name?",
+                        Opts = new[]{ "is", "are", "am", "be" },
+                        Ans  = 0
+                    },
+                    new {
+                        Q    = "___ you from Moldova?",
+                        Opts = new[]{ "Is", "Am", "Are", "Be" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "She has ___ brothers.",
+                        Opts = new[]{ "twos", "second", "two", "twice" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "I ___ dinner when you called.",
+                        Opts = new[]{ "cooked", "cook", "am cooking", "was cooking" },
+                        Ans  = 3
+                    },
+                    new {
+                        Q    = "They ___ to Paris last summer.",
+                        Opts = new[]{ "go", "have gone", "went", "goes" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "There ___ a lot of people at the party.",
+                        Opts = new[]{ "is", "was", "were", "are" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "If I had more money, I ___ buy a new car.",
+                        Opts = new[]{ "will", "can", "should", "would" },
+                        Ans  = 3
+                    },
+                    new {
+                        Q    = "She ___ here since 2020.",
+                        Opts = new[]{ "lives", "lived", "has lived", "was living" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "The letter ___ yesterday.",
+                        Opts = new[]{ "sent", "sends", "has sent", "was sent" },
+                        Ans  = 3
+                    },
+                    new {
+                        Q    = "I wish I ___ harder at school.",
+                        Opts = new[]{ "study", "studied", "would study", "had studied" },
+                        Ans  = 3
+                    },
+                    new {
+                        Q    = "___ the heavy rain, the match continued.",
+                        Opts = new[]{ "Because", "Although", "Despite", "Even" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "By the time we arrived, they ___.",
+                        Opts = new[]{ "left", "have left", "had left", "were left" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "The committee recommended that the policy ___ reviewed.",
+                        Opts = new[]{ "was", "is", "were", "be" },
+                        Ans  = 3
+                    },
+                    new {
+                        Q    = "He spoke with such ___ that everyone believed him.",
+                        Opts = new[]{ "convince", "convinced", "conviction", "convicting" },
+                        Ans  = 2
+                    },
+                    new {
+                        Q    = "The new law, ___ the opposition had strongly resisted, was finally passed.",
+                        Opts = new[]{ "what", "that", "who", "which" },
+                        Ans  = 3
+                    },
+                };
+            }
+
+            @for (int i = 0; i < questions.Length; i++)
+            {
+                var q = questions[i];
+                <div class="quiz-question" id="q@(i)"
+                     style="background:#fff;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.07);
+                            padding:28px 30px;margin-bottom:20px;@(i > 0 ? "display:none;" : "")">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+                        <span style="background:linear-gradient(135deg,#7B2FBE,#FF6B35);color:#fff;font-weight:700;
+                                     font-size:13px;padding:5px 13px;border-radius:20px;flex-shrink:0;">
+                            @(i + 1) / 15
+                        </span>
+                        <span style="font-size:18px;font-weight:600;color:#1f2a44;">@q.Q</span>
+                    </div>
+                    <div class="options-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        @for (int o = 0; o < q.Opts.Length; o++)
+                        {
+                            <label class="opt-label" data-correct="@(o == q.Ans ? "true" : "false")"
+                                   style="display:flex;align-items:center;gap:10px;border:2px solid #e6e8f0;
+                                          border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .2s;">
+                                <input type="radio" name="q@(i)" value="@o" class="opt-radio"
+                                       style="width:16px;height:16px;accent-color:#7B2FBE;" />
+                                <span style="font-size:15px;color:#1f2a44;">@q.Opts[o]</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div style="text-align:center;margin-top:10px;">
+                <button id="prev-btn" onclick="navigate(-1)"
+                        style="background:#f4f6fb;color:#1f2a44;border:none;padding:13px 32px;
+                               border-radius:30px;font-weight:600;font-size:15px;cursor:pointer;
+                               margin-right:12px;display:none;">
+                    <i class="fa-solid fa-arrow-left"></i> Înapoi
+                </button>
+                <button id="next-btn" onclick="navigate(1)"
+                        style="background:linear-gradient(135deg,#7B2FBE,#FF6B35);color:#fff;border:none;
+                               padding:13px 36px;border-radius:30px;font-weight:700;font-size:15px;cursor:pointer;">
+                    Următoarea <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button id="submit-btn" onclick="showResult()"
+                        style="background:linear-gradient(135deg,#7B2FBE,#FF6B35);color:#fff;border:none;
+                               padding:13px 36px;border-radius:30px;font-weight:700;font-size:15px;cursor:pointer;display:none;">
+                    <i class="fa-solid fa-flag-checkered"></i> Află nivelul meu
+                </button>
+            </div>
+        </div>
+
+        <!-- RESULT -->
+        <div id="result-card" style="display:none;background:#fff;border-radius:20px;
+                                     box-shadow:0 8px 32px rgba(0,0,0,.1);padding:48px 40px;text-align:center;">
+            <div id="result-icon" style="font-size:56px;margin-bottom:16px;"></div>
+            <div id="result-level" style="font-size:52px;font-weight:800;margin-bottom:8px;"></div>
+            <div id="result-name"  style="font-size:22px;font-weight:600;color:#1f2a44;margin-bottom:12px;"></div>
+            <div id="result-desc"  style="color:#6c757d;font-size:15px;max-width:520px;margin:0 auto 28px;line-height:1.7;"></div>
+            <div id="result-score" style="background:#f8f9fb;border-radius:12px;padding:14px 24px;
+                                          display:inline-block;color:#6c757d;font-size:14px;margin-bottom:28px;"></div>
+            <div>
+                <a href="@Url.Action("Courses", "Home")"
+                   style="display:inline-block;background:linear-gradient(135deg,#7B2FBE,#FF6B35);color:#fff;
+                          padding:14px 36px;border-radius:30px;text-decoration:none;font-weight:700;font-size:16px;margin-right:12px;">
+                    Găsește cursul potrivit
+                </a>
+                <button onclick="restart()"
+                        style="background:#f4f6fb;color:#1f2a44;border:none;padding:14px 28px;
+                               border-radius:30px;font-weight:600;font-size:15px;cursor:pointer;">
+                    Reia testul
+                </button>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+    .opt-label:hover { border-color: #7B2FBE; background: #f8f4ff; }
+    .opt-label.selected { border-color: #7B2FBE; background: #f8f4ff; }
+    .opt-label.correct  { border-color: #16a34a; background: #e6f6ea; }
+    .opt-label.wrong    { border-color: #e53e3e; background: #fff0f0; }
+</style>
+
+<script>
+    const TOTAL = 15;
+    let current = 0;
+    const answers = new Array(TOTAL).fill(-1);
+
+    function navigate(dir) {
+        const radios = document.querySelectorAll(`input[name="q${current}"]`);
+        radios.forEach(r => { if (r.checked) answers[current] = parseInt(r.value); });
+
+        current += dir;
+        updateView();
+    }
+
+    function updateView() {
+        document.querySelectorAll('.quiz-question').forEach((el, i) => {
+            el.style.display = i === current ? 'block' : 'none';
+        });
+
+        // restore selection
+        if (answers[current] >= 0) {
+            const radio = document.querySelector(`input[name="q${current}"][value="${answers[current]}"]`);
+            if (radio) radio.checked = true;
+        }
+
+        const pct = Math.round((current / TOTAL) * 100);
+        document.getElementById('progress-bar').style.width = pct + '%';
+        document.getElementById('progress-label').textContent = `Întrebarea ${current + 1} din ${TOTAL}`;
+        document.getElementById('progress-pct').textContent = pct + '%';
+
+        document.getElementById('prev-btn').style.display  = current > 0        ? 'inline-block' : 'none';
+        document.getElementById('next-btn').style.display  = current < TOTAL-1  ? 'inline-block' : 'none';
+        document.getElementById('submit-btn').style.display= current === TOTAL-1 ? 'inline-block' : 'none';
+    }
+
+    // highlight on click
+    document.querySelectorAll('.opt-radio').forEach(radio => {
+        radio.addEventListener('change', function () {
+            const name = this.name;
+            document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                r.closest('.opt-label').classList.remove('selected');
+            });
+            this.closest('.opt-label').classList.add('selected');
+        });
+    });
+
+    const CORRECT = [0,2,2,3,2,2,3,2,3,3,2,2,3,2,3];
+
+    function showResult() {
+        const radios = document.querySelectorAll(`input[name="q${current}"]`);
+        radios.forEach(r => { if (r.checked) answers[current] = parseInt(r.value); });
+
+        let score = 0;
+        for (let i = 0; i < TOTAL; i++) if (answers[i] === CORRECT[i]) score++;
+
+        const levels = [
+            { min:0,  max:3,  code:'A1', name:'Beginner',      icon:'🌱', color:'#6c757d',
+              desc:'Ești la început — felicitări că ai făcut primul pas! Cursul nostru A1 te va ajuta să construiești o bază solidă de vocabular și gramatică.' },
+            { min:4,  max:6,  code:'A2', name:'Elementary',     icon:'📖', color:'#00B4D8',
+              desc:'Poți purta conversații simple și înțelegi propoziții de bază. Cursul A2 te va pregăti să treci la nivel intermediar în câteva luni.' },
+            { min:7,  max:9,  code:'B1', name:'Intermediate',   icon:'🚀', color:'#FFB800',
+              desc:'Te descurci în situații de zi cu zi și înțelegi texte clare. Cursul B1 te va ajuta să devii mai fluent și să câștige mai multă încredere.' },
+            { min:10, max:11, code:'B2', name:'Upper-Intermediate', icon:'⭐', color:'#FF6B35',
+              desc:'Comunici cu ușurință pe subiecte complexe. Cursul B2 te va pregăti pentru examene Cambridge (FCE) și medii profesionale.' },
+            { min:12, max:13, code:'C1', name:'Advanced',       icon:'🏆', color:'#7B2FBE',
+              desc:'Ești avansat și te exprimi cu precizie. Cursul C1 te va aduce la nivelul profesional necesar pentru CAE și contexte academice.' },
+            { min:14, max:15, code:'C2', name:'Proficiency',    icon:'💎', color:'#1B3A6B',
+              desc:'Felicitări! Ai atins cel mai înalt nivel CEFR. Nivelul C2 înseamnă stăpânire completă a limbii engleze, echivalent unui vorbitor nativ educat.' },
+        ];
+
+        const lvl = levels.find(l => score >= l.min && score <= l.max) || levels[0];
+
+        document.getElementById('quiz-form').style.display   = 'none';
+        document.getElementById('result-card').style.display = 'block';
+        document.getElementById('result-icon').textContent   = lvl.icon;
+        document.getElementById('result-level').textContent  = lvl.code;
+        document.getElementById('result-level').style.color  = lvl.color;
+        document.getElementById('result-name').textContent   = lvl.name;
+        document.getElementById('result-desc').textContent   = lvl.desc;
+        document.getElementById('result-score').textContent  = `Răspunsuri corecte: ${score} din ${TOTAL}`;
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function restart() {
+        answers.fill(-1);
+        current = 0;
+        document.querySelectorAll('.opt-radio').forEach(r => r.checked = false);
+        document.querySelectorAll('.opt-label').forEach(l => l.classList.remove('selected','correct','wrong'));
+        document.getElementById('result-card').style.display = 'none';
+        document.getElementById('quiz-form').style.display   = 'block';
+        updateView();
+    }
+
+    updateView();
+</script>

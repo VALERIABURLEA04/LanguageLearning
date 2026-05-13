@@ -13,10 +13,10 @@ public class EfCourseStore : ICourseStore
         _db.Courses.Find(id) is { } c ? Map(c) : null;
 
     public IReadOnlyList<CourseDto> ListAll() =>
-        _db.Courses.OrderBy(c => c.Id).Select(c => Map(c)).ToList();
+        _db.Courses.OrderBy(c => c.Id).ToList().Select(Map).ToList();
 
     public IReadOnlyList<CourseDto> ListByTitles(IReadOnlyList<string> titles) =>
-        _db.Courses.Where(c => titles.Contains(c.Title)).Select(c => Map(c)).ToList();
+        _db.Courses.Where(c => titles.Contains(c.Title)).ToList().Select(Map).ToList();
 
     public bool IncrementStudents(int courseId)
     {
@@ -57,27 +57,28 @@ public class EfCourseStore : ICourseStore
 
     private static CourseRow ApplyDto(CourseDto d, CourseRow r)
     {
-        r.Title           = d.Title;
-        r.Language        = d.Language;
-        r.Level           = d.Level;
+        r.Title           = d.Title           ?? string.Empty;
+        r.Language        = d.Language        ?? string.Empty;
+        r.Level           = d.Level           ?? string.Empty;
         r.Price           = d.Price;
         r.OldPrice        = d.OldPrice;
         r.Students        = d.Students;
-        r.Lessons         = d.Lessons;
-        r.Description     = d.Description;
-        r.LongDescription = d.LongDescription;
-        r.ImageUrl        = d.ImageUrl;
-        r.BackgroundColor = d.BackgroundColor;
-        r.Icon            = d.Icon;
-        r.Duration        = d.Duration;
-        r.Frequency       = d.Frequency;
-        r.PriceNote       = d.PriceNote;
-        r.FeaturesText    = d.FeaturesText;
+        r.Description     = d.Description     ?? string.Empty;
+        r.LongDescription = d.LongDescription ?? string.Empty;
+        r.ImageUrl        = d.ImageUrl        ?? string.Empty;
+        r.BackgroundColor = string.IsNullOrEmpty(d.BackgroundColor) ? "#FF6B35" : d.BackgroundColor;
+        r.Icon            = string.IsNullOrEmpty(d.Icon)            ? "📚"     : d.Icon;
+        r.Duration        = d.Duration        ?? string.Empty;
+        r.Frequency       = d.Frequency       ?? string.Empty;
+        r.PriceNote       = d.PriceNote       ?? string.Empty;
+        r.FeaturesText    = d.FeaturesText    ?? string.Empty;
         return r;
     }
 
-    private static CourseDto Map(CourseRow c) =>
-        new(c.Id, c.Title, c.Language, c.Level, c.Price, c.Students, c.Lessons)
+    private CourseDto Map(CourseRow c)
+    {
+        var lessonCount = _db.Lessons.Count(l => l.CourseTitle == c.Title);
+        return new(c.Id, c.Title, c.Language, c.Level, c.Price, c.Students, lessonCount)
         {
             OldPrice        = c.OldPrice,
             Description     = c.Description,
@@ -90,4 +91,5 @@ public class EfCourseStore : ICourseStore
             PriceNote       = c.PriceNote,
             FeaturesText    = c.FeaturesText
         };
+    }
 }

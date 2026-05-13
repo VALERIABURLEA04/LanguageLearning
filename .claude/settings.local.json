@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Remove-Item \"D:\\\\LanguageLearning\\\\as\\\\app.db\" -Force)",
+      "Bash(git push *)"
+    ]
+  }
+}

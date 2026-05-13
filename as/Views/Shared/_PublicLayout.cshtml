@@ -1,3 +1,4 @@
+@inject MyWebApplication.BusinessLogic.Interfaces.INotificationStore NotifStore
 @{
     var section = (ViewContext.RouteData.Values["action"] ?? "").ToString();
     bool IsActive(string a) => string.Equals(a, section, StringComparison.OrdinalIgnoreCase);
@@ -43,6 +44,7 @@
                         <ul>
                             <li><a href="@Url.Action("Index", "Home")" class="@(IsActive("Index") ? "active" : "")">Home</a></li>
                             <li><a href="@Url.Action("Courses", "Home")" class="@(IsActive("Courses") ? "active" : "")">Courses</a></li>
+                            <li><a href="@Url.Action("LevelTest", "Home")" class="@(IsActive("LevelTest") ? "active" : "")">Află nivelul</a></li>
                             <li><a href="@Url.Action("Contact", "Home")" class="@(IsActive("Contact") ? "active" : "")">Contact</a></li>
                             @if (isAdmin)
                             {
@@ -54,8 +56,33 @@
                 <div class="col-20 d-none d-xl-block text-end align-self-center">
                     @if (isAuth)
                     {
-                        <a href="@Url.Action("Profile", "Home")" class="btn_one" style="display: inline-flex; align-items: center; gap: 8px;">
-                            <i class="fa-regular fa-user"></i> @userName.Split(' ')[0]
+                        var unread = NotifStore.CountUnread();
+                        <a href="@Url.Action("Notifications", "Home")" title="Notificări"
+                           style="position:relative;display:inline-flex;align-items:center;justify-content:center;
+                                  width:40px;height:40px;border-radius:50%;background:#f4f6fb;color:#6c757d;
+                                  text-decoration:none;margin-right:6px;vertical-align:middle;">
+                            <i class="fa-solid fa-bell"></i>
+                            @if (unread > 0)
+                            {
+                                <span style="position:absolute;top:4px;right:4px;width:16px;height:16px;
+                                             background:#FF6B35;color:#fff;font-size:10px;font-weight:700;
+                                             border-radius:50%;display:flex;align-items:center;justify-content:center;
+                                             line-height:1;">@(unread > 9 ? "9+" : unread.ToString())</span>
+                            }
+                        </a>
+                        var profileUrl = isAdmin
+                            ? Url.Action("Index", "Admin")
+                            : Url.Action("Profile", "Home");
+                        <a href="@profileUrl" class="btn_one" style="display: inline-flex; align-items: center; gap: 8px;">
+                            @if (isAdmin)
+                            {
+                                <i class="fa-solid fa-shield-halved"></i>
+                            }
+                            else
+                            {
+                                <i class="fa-regular fa-user"></i>
+                            }
+                            @userName.Split(' ')[0]
                         </a>
                         <a href="@Url.Action("Logout", "Home")" title="Sign out" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; background: #f4f6fb; color: #6c757d; text-decoration: none; vertical-align: middle;">
                             <i class="fa-solid fa-right-from-bracket"></i>
@@ -70,10 +97,18 @@
                 <ul class="mobile_menu">
                     <li><a href="@Url.Action("Index", "Home")">Home</a></li>
                     <li><a href="@Url.Action("Courses", "Home")">Courses</a></li>
+                    <li><a href="@Url.Action("LevelTest", "Home")">Află nivelul</a></li>
                     <li><a href="@Url.Action("Contact", "Home")">Contact</a></li>
                     @if (isAuth)
                     {
-                        <li><a href="@Url.Action("Profile", "Home")">Profile</a></li>
+                        @if (isAdmin)
+                        {
+                            <li><a href="@Url.Action("Index", "Admin")">Admin Dashboard</a></li>
+                        }
+                        else
+                        {
+                            <li><a href="@Url.Action("Profile", "Home")">Profil</a></li>
+                        }
                         <li><a href="@Url.Action("Logout", "Home")">Sign out</a></li>
                     }
                     else
@@ -99,14 +134,6 @@
                     <div class="single_footer">
                         <a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo.png" alt="Lingua"></a>
                         <p>Lingua helps learners master English — from absolute beginners to Cambridge C2. Speak with confidence in weeks, not years.</p>
-                        <div class="social_profile">
-                            <ul>
-                                <li><a href="#"><i class="fa-brands fa-facebook-f"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-instagram"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-youtube"></i></a></li>
-                                <li><a href="#"><i class="fa-brands fa-linkedin-in"></i></a></li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
                 <div class="col-lg-2 col-sm-6 col-xs-12">
@@ -134,8 +161,6 @@
                 <div class="col-lg-3 col-sm-6 col-xs-12">
                     <div class="single_footer">
                         <h4>Get in touch</h4>
-                        <div class="sf_contact"><span class="ti-email"></span><p>hello@lingua.app</p></div>
-                        <div class="sf_contact"><span class="ti-mobile"></span><p>+40 720 000 000</p></div>
                         <div class="sf_contact"><span class="ti-map"></span><p>Chișinău, Republica Moldova</p></div>
                     </div>
                 </div>

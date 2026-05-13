@@ -18,6 +18,10 @@
         label { display: block; font-size: 13px; font-weight: 500; color: #1f2a44; margin-bottom: 6px; }
         input { width: 100%; padding: 11px 14px; border: 1px solid #e1e5ea; border-radius: 8px; font-size: 14px; font-family: inherit; margin-bottom: 14px; }
         input:focus { outline: none; border-color: #ff6a3d; }
+        .pwd-wrap { position: relative; margin-bottom: 14px; }
+        .pwd-wrap input { margin-bottom: 0; padding-right: 42px; }
+        .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; padding: 0; width: auto; cursor: pointer; color: #aaa; font-size: 16px; }
+        .pwd-toggle:hover { color: #ff6a3d; background: none; }
         button { width: 100%; padding: 12px; background: #ff6a3d; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
         button:hover { background: #e85a2d; }
         .footer { text-align: center; margin-top: 18px; font-size: 14px; color: #6c757d; }
@@ -41,7 +45,12 @@
             <input type="email" name="email" required autofocus>
 
             <label>Password</label>
-            <input type="password" name="password" required>
+            <div class="pwd-wrap">
+                <input type="password" name="password" id="pwd" required>
+                <button type="button" class="pwd-toggle" onclick="togglePwd('pwd','eyeLogin')">
+                    <i class="fa-regular fa-eye" id="eyeLogin"></i>
+                </button>
+            </div>
 
             <button type="submit">Sign in</button>
         </form>
@@ -50,5 +59,19 @@
             No account? <a asp-action="Register" asp-controller="Home">Sign up</a>
         </div>
     </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <script>
+        function togglePwd(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

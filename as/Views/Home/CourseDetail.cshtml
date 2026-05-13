@@ -155,13 +155,31 @@
                             <p style="color:#6c757d;font-size:13px;margin-bottom:16px;">@Model.PriceNote</p>
                         }
                     }
-                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })" class="btn_one"
-                       style="display:block;text-align:center;margin-bottom:10px;background:@accentColor;
-                              border-color:@accentColor;">
-                        Înscrie-te acum <i class="ti-arrow-top-right"></i>
-                    </a>
+                    @if ((bool)(ViewBag.IsEnrolled ?? false))
+                    {
+                        <div style="background:#e6f6ea;color:#2e7d32;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;text-align:center;margin-bottom:12px;">
+                            <i class="fa-solid fa-circle-check"></i> Ești înscris la acest curs
+                        </div>
+                        <a href="@Url.Action("Profile", "Home")"
+                           style="display:block;text-align:center;background:#16a34a;color:#fff;
+                                  padding:13px;border-radius:26px;text-decoration:none;font-weight:700;font-size:16px;">
+                            <i class="fa-solid fa-play" style="margin-right:6px;"></i> Continuă cursul
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Checkout", "Home", new { id = Model.Id })"
+                           style="display:block;text-align:center;background:@accentColor;color:#fff;
+                                  padding:13px;border-radius:26px;text-decoration:none;font-weight:700;font-size:16px;">
+                            <i class="fa-solid fa-lock" style="margin-right:6px;"></i> Spre achitare
+                        </a>
+                        <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                           style="display:block;text-align:center;padding:11px;color:#6c757d;text-decoration:none;font-weight:500;">
+                            Înscrie-te gratuit <i class="ti-arrow-top-right"></i>
+                        </a>
+                    }
                     <a href="@Url.Action("Courses", "Home")"
-                       style="display:block;text-align:center;padding:11px;color:#6c757d;text-decoration:none;font-weight:500;">
+                       style="display:block;text-align:center;padding:8px;color:#aaa;text-decoration:none;font-size:13px;">
                         Vezi toate cursurile
                     </a>
                     <hr style="margin:22px 0;">
@@ -226,7 +244,7 @@
                         <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Fără comision suplimentar</li>
                         <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Anulare în primele 14 zile</li>
                     </ul>
-                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                    <a href="@Url.Action("Checkout", "Home", new { id = Model.Id })"
                        style="display:block;text-align:center;background:#e9ecf5;color:#1f2a44;
                               padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
                         Alege plata în rate
@@ -266,10 +284,10 @@
                         <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Certificat de absolvire</li>
                         <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Garanție 14 zile</li>
                     </ul>
-                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                    <a href="@Url.Action("Checkout", "Home", new { id = Model.Id })"
                        style="display:block;text-align:center;background:#16a34a;color:#fff;
                               padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
-                        Înscrie-te acum
+                        Achită acum
                     </a>
                 </div>
             </div>
@@ -292,7 +310,7 @@
                         <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Plan de studiu personalizat</li>
                         <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Suport prin chat 7 zile/7</li>
                     </ul>
-                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                    <a href="@Url.Action("Checkout", "Home", new { id = Model.Id })"
                        style="display:block;text-align:center;background:#e9ecf5;color:#1f2a44;
                               padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
                         Alege Premium

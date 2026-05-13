@@ -7,40 +7,48 @@ using MyWebApplication.BusinessLogic.Command;
 using MyWebApplication.BusinessLogic.Core;
 using MyWebApplication.BusinessLogic.Core.Dtos;
 using MyWebApplication.BusinessLogic.Facade;
+using MyWebApplication.BusinessLogic.Interfaces;
 
 namespace Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ApplicationDbContext _db;
-    private readonly AuthFacade _auth;
+    private readonly AuthFacade           _auth;
     private readonly EnrollStudentCommand _enroll;
-    private readonly ProfileService _profile;
-    private readonly CourseQueryService _courseQuery;
-    private readonly CheckoutCommand _checkout;
+    private readonly ProfileService       _profile;
+    private readonly CourseQueryService   _courseQuery;
+    private readonly CheckoutCommand      _checkout;
+    private readonly INotificationStore   _notifications;
 
     public HomeController(
-        ApplicationDbContext db,
         AuthFacade auth,
         EnrollStudentCommand enroll,
         ProfileService profile,
         CourseQueryService courseQuery,
-        CheckoutCommand checkout)
+        CheckoutCommand checkout,
+        INotificationStore notifications)
     {
-        _db = db;
-        _auth = auth;
-        _enroll = enroll;
-        _profile = profile;
-        _courseQuery = courseQuery;
-        _checkout = checkout;
+        _auth          = auth;
+        _enroll        = enroll;
+        _profile       = profile;
+        _courseQuery   = courseQuery;
+        _checkout      = checkout;
+        _notifications = notifications;
     }
 
     public IActionResult Index()
     {
-        ViewBag.Courses       = _db.Courses.OrderBy(c => c.Id).ToList();
-        ViewBag.TotalCourses  = _db.Courses.Count();
-        ViewBag.TotalLessons  = _db.Lessons.Count();
-        ViewBag.TotalStudents = _db.Courses.Sum(c => c.Students);
+        var stats = _courseQuery.GetPublicStats();
+        ViewBag.Courses       = _courseQuery.ListAll().Select(d => new sa.Models.CourseRow
+        {
+            Id = d.Id, Title = d.Title, Language = d.Language, Level = d.Level,
+            Price = d.Price, OldPrice = d.OldPrice, Students = d.Students, Lessons = d.Lessons,
+            Description = d.Description, ImageUrl = d.ImageUrl,
+            BackgroundColor = d.BackgroundColor, Icon = d.Icon
+        }).ToList();
+        ViewBag.TotalCourses  = stats.TotalCourses;
+        ViewBag.TotalLessons  = stats.TotalLessons;
+        ViewBag.TotalStudents = stats.TotalStudents;
         return View();
     }
 
@@ -48,11 +56,15 @@ public class HomeController : Controller
 
     public IActionResult Courses(string? q)
     {
-        var query = _db.Courses.AsQueryable();
-        if (!string.IsNullOrWhiteSpace(q))
-            query = query.Where(c => c.Title.Contains(q) || c.Description.Contains(q) || c.Level.Contains(q));
+        var results = _courseQuery.Search(q).Select(d => new sa.Models.CourseRow
+        {
+            Id = d.Id, Title = d.Title, Language = d.Language, Level = d.Level,
+            Price = d.Price, OldPrice = d.OldPrice, Students = d.Students, Lessons = d.Lessons,
+            Description = d.Description, ImageUrl = d.ImageUrl,
+            BackgroundColor = d.BackgroundColor, Icon = d.Icon
+        }).ToList();
         ViewBag.Query = q ?? string.Empty;
-        return View(query.OrderBy(c => c.Id).ToList());
+        return View(results);
     }
 
     public IActionResult CourseDetail(int id)
@@ -73,7 +85,19 @@ public class HomeController : Controller
         ViewBag.Lessons = bundle.Value.Lessons
             .Select(l => new sa.Models.LessonRow { Id = l.Id, Title = l.Title, CourseTitle = l.CourseTitle, DurationMinutes = l.DurationMinutes, Status = l.Status })
             .ToList();
+
+        var userId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid) ? uid : 0;
+        var profileBundle = userId > 0 ? _profile.GetForUser(userId) : null;
+        ViewBag.IsEnrolled = profileBundle?.EnrolledCourses.Any(ec => ec.Id == id) ?? false;
+
         return View(course);
+    }
+
+    [Authorize]
+    public IActionResult Notifications()
+    {
+        _notifications.MarkAllRead();
+        return View(_notifications.ListAll());
     }
 
     public IActionResult Enroll(int id)
@@ -87,6 +111,8 @@ public class HomeController : Controller
 
     public IActionResult Contact() => View();
 
+    public IActionResult LevelTest() => View();
+
     public IActionResult Category(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return NotFound();
@@ -96,31 +122,38 @@ public class HomeController : Controller
     }
 
     [HttpGet]
-    public IActionResult Checkout(string id)
+    public IActionResult Checkout(int id)
     {
-        if (string.IsNullOrWhiteSpace(id)) return NotFound();
-        var category = sa.Models.CourseCategory.FindBySlug(id);
-        if (category is null) return NotFound();
-        return View(category);
+        var dto = _courseQuery.FindById(id);
+        if (dto is null) return NotFound();
+        return View(new sa.Models.CourseRow
+        {
+            Id = dto.Id, Title = dto.Title, Language = dto.Language, Level = dto.Level,
+            Price = dto.Price, OldPrice = dto.OldPrice, Students = dto.Students, Lessons = dto.Lessons,
+            Description = dto.Description, LongDescription = dto.LongDescription,
+            ImageUrl = dto.ImageUrl, BackgroundColor = dto.BackgroundColor,
+            Icon = dto.Icon, Duration = dto.Duration, Frequency = dto.Frequency,
+            PriceNote = dto.PriceNote, FeaturesText = dto.FeaturesText
+        });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Checkout(string id, string fullName, string email, string phone, string paymentMethod, string plan)
+    public IActionResult Checkout(int id, string fullName, string email, string phone, string paymentMethod, string plan)
     {
-        var category = sa.Models.CourseCategory.FindBySlug(id);
-        if (category is null) return NotFound();
+        var course = _courseQuery.FindById(id);
+        if (course is null) return NotFound();
 
         var result = _checkout.Execute(new CheckoutRequest
         {
-            CategorySlug   = category.Slug,
-            CourseTitle    = category.Title,
-            FullName       = fullName,
-            Email          = email,
-            Phone          = phone,
-            PaymentMethod  = paymentMethod,
-            Plan           = plan,
-            TotalAmount    = category.Price
+            CategorySlug  = course.Id.ToString(),
+            CourseTitle   = course.Title,
+            FullName      = fullName,
+            Email         = email,
+            Phone         = phone,
+            PaymentMethod = paymentMethod,
+            Plan          = plan,
+            TotalAmount   = course.Price
         });
 
         if (!result.Success)
@@ -130,7 +163,7 @@ public class HomeController : Controller
         }
 
         TempData["Msg"] = result.Message;
-        return RedirectToAction(nameof(Category), new { id });
+        return RedirectToAction(nameof(CourseDetail), new { id });
     }
 
     // ========== AUTH ==========

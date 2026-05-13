@@ -2,7 +2,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MyWebApplication.BusinessLogic.Core.Dtos;
+using MyWebApplication.BusinessLogic.Facade;
 using sa.Models;
 
 namespace Controllers;
@@ -10,13 +11,13 @@ namespace Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
-    private readonly ApplicationDbContext _db;
-    private readonly IWebHostEnvironment  _env;
+    private readonly AdminFacade _admin;
+    private readonly IWebHostEnvironment _env;
 
-    public AdminController(ApplicationDbContext db, IWebHostEnvironment env)
+    public AdminController(AdminFacade admin, IWebHostEnvironment env)
     {
-        _db  = db;
-        _env = env;
+        _admin = admin;
+        _env   = env;
     }
 
     public async Task<IActionResult> Logout()
@@ -29,17 +30,21 @@ public class AdminController : Controller
 
     public IActionResult Index()
     {
-        ViewBag.TotalCourses    = _db.Courses.Count();
-        ViewBag.TotalLessons    = _db.Lessons.Count();
-        ViewBag.TotalStudents   = _db.Courses.Sum(c => c.Students);
-        ViewBag.TotalRevenue    = _db.Purchases.Where(p => p.Status == "Completed").Sum(p => p.Amount);
-        ViewBag.RecentPurchases = _db.Purchases.OrderByDescending(p => p.PurchaseDate).Take(5).ToList();
+        var stats = _admin.GetStats();
+        ViewBag.TotalCourses    = stats.TotalCourses;
+        ViewBag.TotalLessons    = stats.TotalLessons;
+        ViewBag.TotalStudents   = stats.TotalStudents;
+        ViewBag.TotalRevenue    = stats.TotalRevenue;
+        ViewBag.RecentPurchases = _admin.ListPurchases()
+            .OrderByDescending(p => p.PurchaseDate).Take(5)
+            .Select(PurchaseToRow).ToList();
         return View();
     }
 
     // ============================== COURSES ==============================
 
-    public IActionResult Courses() => View(_db.Courses.OrderBy(c => c.Id).ToList());
+    public IActionResult Courses() =>
+        View(_admin.ListCourses().Select(CourseToRow).ToList());
 
     [HttpGet]
     public IActionResult CreateCourse()
@@ -54,8 +59,7 @@ public class AdminController : Controller
     {
         if (!ModelState.IsValid) { ViewBag.FormTitle = "Adaugă curs"; return View("CourseForm", model); }
         model.ImageUrl = await SaveImageAsync(imageFile) ?? string.Empty;
-        _db.Courses.Add(model);
-        _db.SaveChanges();
+        _admin.CreateCourse(CourseToDto(model));
         TempData["Msg"] = $"Cursul \"{model.Title}\" a fost creat.";
         return RedirectToAction(nameof(Courses));
     }
@@ -63,40 +67,22 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult EditCourse(int id)
     {
-        var course = _db.Courses.Find(id);
-        if (course == null) return NotFound();
+        var course = _admin.FindCourse(id);
+        if (course is null) return NotFound();
         ViewBag.FormTitle = "Editează curs";
-        return View("CourseForm", course);
+        return View("CourseForm", CourseToRow(course));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditCourse(CourseRow model, IFormFile? imageFile, string? existingImageUrl)
     {
-        var course = _db.Courses.Find(model.Id);
-        if (course == null) return NotFound();
-
-        course.Title           = model.Title;
-        course.Language        = model.Language;
-        course.Level           = model.Level;
-        course.Price           = model.Price;
-        course.OldPrice        = model.OldPrice;
-        course.Lessons         = model.Lessons;
-        course.Students        = model.Students;
-        course.Description     = model.Description;
-        course.LongDescription = model.LongDescription;
-        course.BackgroundColor = model.BackgroundColor;
-        course.Icon            = model.Icon;
-        course.Duration        = model.Duration;
-        course.Frequency       = model.Frequency;
-        course.PriceNote       = model.PriceNote;
-        course.FeaturesText    = model.FeaturesText;
-
+        var existing = _admin.FindCourse(model.Id);
+        if (existing is null) return NotFound();
         var newImage = await SaveImageAsync(imageFile);
-        course.ImageUrl = newImage ?? existingImageUrl ?? course.ImageUrl;
-
-        _db.SaveChanges();
-        TempData["Msg"] = $"Cursul \"{course.Title}\" a fost actualizat.";
+        model.ImageUrl = newImage ?? existingImageUrl ?? existing.ImageUrl;
+        _admin.UpdateCourse(CourseToDto(model));
+        TempData["Msg"] = $"Cursul \"{model.Title}\" a fost actualizat.";
         return RedirectToAction(nameof(Courses));
     }
 
@@ -104,11 +90,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeleteCourse(int id)
     {
-        var course = _db.Courses.Find(id);
-        if (course != null)
+        var course = _admin.FindCourse(id);
+        if (course is not null)
         {
-            _db.Courses.Remove(course);
-            _db.SaveChanges();
+            _admin.DeleteCourse(id);
             TempData["Msg"] = $"Cursul \"{course.Title}\" a fost șters.";
         }
         return RedirectToAction(nameof(Courses));
@@ -116,13 +101,14 @@ public class AdminController : Controller
 
     // ============================== LESSONS ==============================
 
-    public IActionResult Lessons() => View(_db.Lessons.OrderBy(l => l.Id).ToList());
+    public IActionResult Lessons() =>
+        View(_admin.ListLessons().Select(LessonToRow).ToList());
 
     [HttpGet]
     public IActionResult CreateLesson()
     {
         ViewBag.FormTitle    = "Add Lesson";
-        ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
+        ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
         return View("LessonForm", new LessonRow { Status = "Published", DurationMinutes = 45 });
     }
 
@@ -133,11 +119,10 @@ public class AdminController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.FormTitle    = "Add Lesson";
-            ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
+            ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
             return View("LessonForm", model);
         }
-        _db.Lessons.Add(model);
-        _db.SaveChanges();
+        _admin.CreateLesson(LessonToDto(model));
         TempData["Msg"] = $"Lesson \"{model.Title}\" created.";
         return RedirectToAction(nameof(Lessons));
     }
@@ -145,25 +130,20 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult EditLesson(int id)
     {
-        var lesson = _db.Lessons.Find(id);
-        if (lesson == null) return NotFound();
+        var lesson = _admin.FindLesson(id);
+        if (lesson is null) return NotFound();
         ViewBag.FormTitle    = "Edit Lesson";
-        ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
-        return View("LessonForm", lesson);
+        ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
+        return View("LessonForm", LessonToRow(lesson));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult EditLesson(LessonRow model)
     {
-        var lesson = _db.Lessons.Find(model.Id);
-        if (lesson == null) return NotFound();
-        lesson.Title           = model.Title;
-        lesson.CourseTitle     = model.CourseTitle;
-        lesson.DurationMinutes = model.DurationMinutes;
-        lesson.Status          = model.Status;
-        _db.SaveChanges();
-        TempData["Msg"] = $"Lesson \"{lesson.Title}\" updated.";
+        if (_admin.FindLesson(model.Id) is null) return NotFound();
+        _admin.UpdateLesson(LessonToDto(model));
+        TempData["Msg"] = $"Lesson \"{model.Title}\" updated.";
         return RedirectToAction(nameof(Lessons));
     }
 
@@ -171,11 +151,10 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeleteLesson(int id)
     {
-        var lesson = _db.Lessons.Find(id);
-        if (lesson != null)
+        var lesson = _admin.FindLesson(id);
+        if (lesson is not null)
         {
-            _db.Lessons.Remove(lesson);
-            _db.SaveChanges();
+            _admin.DeleteLesson(id);
             TempData["Msg"] = $"Lesson \"{lesson.Title}\" deleted.";
         }
         return RedirectToAction(nameof(Lessons));
@@ -183,13 +162,14 @@ public class AdminController : Controller
 
     // ============================== PURCHASES ==============================
 
-    public IActionResult Purchases() => View(_db.Purchases.OrderByDescending(p => p.PurchaseDate).ToList());
+    public IActionResult Purchases() =>
+        View(_admin.ListPurchases().OrderByDescending(p => p.PurchaseDate).Select(PurchaseToRow).ToList());
 
     [HttpGet]
     public IActionResult CreatePurchase()
     {
         ViewBag.FormTitle    = "Add Purchase";
-        ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
+        ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
         return View("PurchaseForm", new Purchase { PurchaseDate = DateTime.Now, Status = "Completed", PaymentMethod = "Stripe" });
     }
 
@@ -200,39 +180,31 @@ public class AdminController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.FormTitle    = "Add Purchase";
-            ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
+            ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
             return View("PurchaseForm", model);
         }
-        _db.Purchases.Add(model);
-        _db.SaveChanges();
-        TempData["Msg"] = $"Purchase #{model.Id} created.";
+        _admin.CreatePurchase(PurchaseToDto(model));
+        TempData["Msg"] = $"Purchase created.";
         return RedirectToAction(nameof(Purchases));
     }
 
     [HttpGet]
     public IActionResult EditPurchase(int id)
     {
-        var purchase = _db.Purchases.Find(id);
-        if (purchase == null) return NotFound();
+        var purchase = _admin.FindPurchase(id);
+        if (purchase is null) return NotFound();
         ViewBag.FormTitle    = "Edit Purchase";
-        ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
-        return View("PurchaseForm", purchase);
+        ViewBag.CourseTitles = _admin.ListCourses().Select(c => c.Title).ToList();
+        return View("PurchaseForm", PurchaseToRow(purchase));
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult EditPurchase(Purchase model)
     {
-        var purchase = _db.Purchases.Find(model.Id);
-        if (purchase == null) return NotFound();
-        purchase.StudentName   = model.StudentName;
-        purchase.CourseTitle   = model.CourseTitle;
-        purchase.Amount        = model.Amount;
-        purchase.PurchaseDate  = model.PurchaseDate;
-        purchase.Status        = model.Status;
-        purchase.PaymentMethod = model.PaymentMethod;
-        _db.SaveChanges();
-        TempData["Msg"] = $"Purchase #{purchase.Id} updated.";
+        if (_admin.FindPurchase(model.Id) is null) return NotFound();
+        _admin.UpdatePurchase(PurchaseToDto(model));
+        TempData["Msg"] = $"Purchase #{model.Id} updated.";
         return RedirectToAction(nameof(Purchases));
     }
 
@@ -240,14 +212,49 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeletePurchase(int id)
     {
-        var purchase = _db.Purchases.Find(id);
-        if (purchase != null)
+        var purchase = _admin.FindPurchase(id);
+        if (purchase is not null)
         {
-            _db.Purchases.Remove(purchase);
-            _db.SaveChanges();
+            _admin.DeletePurchase(id);
             TempData["Msg"] = $"Purchase #{id} deleted.";
         }
         return RedirectToAction(nameof(Purchases));
+    }
+
+    // ============================== USERS ==============================
+
+    public IActionResult Users() =>
+        View(_admin.ListUsers().Select(u => new User
+        {
+            Id = u.Id, Name = u.Name, Email = u.Email,
+            PasswordHash = u.PasswordHash, IsAdmin = u.IsAdmin, CreatedAt = u.CreatedAt
+        }).ToList());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ToggleAdmin(int id)
+    {
+        var user = _admin.FindUser(id);
+        if (user is not null)
+        {
+            var newState = !user.IsAdmin;
+            _admin.SetUserAdmin(id, newState);
+            TempData["Msg"] = $"{user.Name} este acum {(newState ? "Admin" : "User")}.";
+        }
+        return RedirectToAction(nameof(Users));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteUser(int id)
+    {
+        var user = _admin.FindUser(id);
+        if (user is not null)
+        {
+            _admin.DeleteUser(id);
+            TempData["Msg"] = $"Userul \"{user.Name}\" a fost șters.";
+        }
+        return RedirectToAction(nameof(Users));
     }
 
     // ============================== HELPERS ==============================
@@ -263,4 +270,36 @@ public class AdminController : Controller
         await file.CopyToAsync(stream);
         return $"/uploads/courses/{name}";
     }
+
+    // ============================== MAPPING ==============================
+
+    private static CourseRow CourseToRow(CourseDto d) => new()
+    {
+        Id = d.Id, Title = d.Title, Language = d.Language, Level = d.Level,
+        Price = d.Price, OldPrice = d.OldPrice, Students = d.Students, Lessons = d.Lessons,
+        Description = d.Description, LongDescription = d.LongDescription,
+        ImageUrl = d.ImageUrl, BackgroundColor = d.BackgroundColor,
+        Icon = d.Icon, Duration = d.Duration, Frequency = d.Frequency,
+        PriceNote = d.PriceNote, FeaturesText = d.FeaturesText
+    };
+
+    private static CourseDto CourseToDto(CourseRow m) =>
+        new(m.Id, m.Title, m.Language, m.Level, m.Price, m.Students, m.Lessons)
+        {
+            OldPrice = m.OldPrice, Description = m.Description, LongDescription = m.LongDescription,
+            ImageUrl = m.ImageUrl, BackgroundColor = m.BackgroundColor, Icon = m.Icon,
+            Duration = m.Duration, Frequency = m.Frequency, PriceNote = m.PriceNote, FeaturesText = m.FeaturesText
+        };
+
+    private static LessonRow LessonToRow(LessonDto d) => new()
+        { Id = d.Id, Title = d.Title, CourseTitle = d.CourseTitle, DurationMinutes = d.DurationMinutes, Status = d.Status };
+
+    private static LessonDto LessonToDto(LessonRow m) =>
+        new(m.Id, m.Title, m.CourseTitle, m.DurationMinutes, m.Status);
+
+    private static Purchase PurchaseToRow(PurchaseDto d) => new()
+        { Id = d.Id, StudentName = d.StudentName, CourseTitle = d.CourseTitle, Amount = d.Amount, PurchaseDate = d.PurchaseDate, Status = d.Status, PaymentMethod = d.PaymentMethod };
+
+    private static PurchaseDto PurchaseToDto(Purchase m) =>
+        new(m.Id, m.StudentName, m.CourseTitle, m.Amount, m.PurchaseDate, m.Status, m.PaymentMethod);
 }

@@ -6,6 +6,7 @@ using MyWebApplication.BusinessLogic.Core;
 using MyWebApplication.BusinessLogic.Factories;
 using MyWebApplication.BusinessLogic.Facade;
 using MyWebApplication.BusinessLogic.Interfaces;
+using MyWebApplication.BusinessLogic.Observer;
 using MyWebApplication.BusinessLogic.Payments;
 using sa.Models;
 using sa.Services;
@@ -40,10 +41,11 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // Stores (EF-backed implementations of BusinessLogic interfaces)
-builder.Services.AddScoped<IUserStore,     EfUserStore>();
-builder.Services.AddScoped<ICourseStore,   EfCourseStore>();
-builder.Services.AddScoped<ILessonStore,   EfLessonStore>();
-builder.Services.AddScoped<IPurchaseStore, EfPurchaseStore>();
+builder.Services.AddScoped<IUserStore,         EfUserStore>();
+builder.Services.AddScoped<ICourseStore,       EfCourseStore>();
+builder.Services.AddScoped<ILessonStore,       EfLessonStore>();
+builder.Services.AddScoped<IPurchaseStore,     EfPurchaseStore>();
+builder.Services.AddScoped<INotificationStore, EfNotificationStore>();
 
 // Cross-cutting services
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -56,6 +58,8 @@ builder.Services.AddScoped<EnrollStudentCommand>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<CourseQueryService>();
 builder.Services.AddScoped<CommandInvoker>();
+builder.Services.AddScoped<NotificationObserver>();
+builder.Services.AddScoped<CourseNotifier>();
 builder.Services.AddScoped<AdminFacade>();
 
 // Payments (Adapter + Strategy/Factory)
@@ -94,16 +98,34 @@ using (var scope = app.Services.CreateScope())
         catch { /* column already exists — ignore */ }
     }
 
-    if (!db.Users.Any())
+    db.Database.ExecuteSqlRaw("""
+        CREATE TABLE IF NOT EXISTS Notifications (
+            Id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            Message   TEXT    NOT NULL DEFAULT '',
+            IsRead    INTEGER NOT NULL DEFAULT 0,
+            CreatedAt TEXT    NOT NULL DEFAULT ''
+        )
+    """);
+
     {
         var adminEmail = app.Configuration["Seed:AdminEmail"] ?? "admin@lingua.app";
         var adminPwd   = app.Configuration["Seed:AdminPassword"]
                          ?? throw new InvalidOperationException("Seed:AdminPassword is not configured in appsettings.json.");
-        db.Users.Add(new User
+        var adminUser  = db.Users.FirstOrDefault(u => u.Email == adminEmail);
+        if (adminUser == null)
         {
-            Name = "Site Admin", Email = adminEmail,
-            PasswordHash = hasher.Hash(adminPwd), IsAdmin = true
-        });
+            db.Users.Add(new User
+            {
+                Name = "Site Admin", Email = adminEmail,
+                PasswordHash = hasher.Hash(adminPwd), IsAdmin = true
+            });
+        }
+        else
+        {
+            // always re-sync hash so appsettings.json is the source of truth
+            adminUser.PasswordHash = hasher.Hash(adminPwd);
+            adminUser.IsAdmin = true;
+        }
         db.SaveChanges();
     }
 }
@@ -124,6 +146,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

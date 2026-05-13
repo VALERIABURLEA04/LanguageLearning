@@ -1,0 +1,74 @@
+@model List<sa.Models.User>
+@{
+    ViewData["Title"] = "Users";
+    Layout = "_AdminLayout";
+}
+
+<div class="admin-topbar">
+    <h1>Users</h1>
+    <span style="color:#6c757d; font-size:14px;">@Model.Count utilizatori înregistrați</span>
+</div>
+
+<div class="data-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nume</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Înregistrat</th>
+                <th>Acțiuni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td style="color:#6c757d;">#@u.Id</td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:@(u.IsAdmin ? "#fff0eb" : "#e9ecf5");
+                                        color:@(u.IsAdmin ? "#ff6a3d" : "#5b5bff");
+                                        display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;">
+                                @u.Name.Substring(0, 1).ToUpper()
+                            </div>
+                            <b>@u.Name</b>
+                        </div>
+                    </td>
+                    <td style="color:#6c757d;">@u.Email</td>
+                    <td>
+                        @if (u.IsAdmin)
+                        {
+                            <span class="badge-status" style="background:#fff0eb; color:#ff6a3d;">
+                                <i class="fa-solid fa-shield-halved"></i> Admin
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge-status" style="background:#e9ecf5; color:#5b5bff;">
+                                <i class="fa-regular fa-user"></i> User
+                            </span>
+                        }
+                    </td>
+                    <td style="color:#6c757d; font-size:13px;">@u.CreatedAt.ToString("dd MMM yyyy")</td>
+                    <td>
+                        <form asp-action="ToggleAdmin" asp-controller="Admin" method="post" class="inline-form">
+                            <input type="hidden" name="id" value="@u.Id" />
+                            <button type="submit" class="btn-action btn-edit" title="@(u.IsAdmin ? "Retrogradează la User" : "Promovează la Admin")">
+                                <i class="fa-solid @(u.IsAdmin ? "fa-user-minus" : "fa-user-shield")"></i>
+                            </button>
+                        </form>
+                        <form asp-action="DeleteUser" asp-controller="Admin" method="post" class="inline-form"
+                              onsubmit="return confirm('Șterge userul \'@u.Name\'?');">
+                            <input type="hidden" name="id" value="@u.Id" />
+                            <button type="submit" class="btn-action btn-delete">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
