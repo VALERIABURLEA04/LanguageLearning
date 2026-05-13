@@ -2,16 +2,17 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using sa.Models;
+using MyWebApplication.BusinessLogic.Core.Dtos;
+using MyWebApplication.BusinessLogic.Interfaces;
 
 namespace sa.Services;
 
-public class TokenService
+public class TokenService : ITokenIssuer
 {
     private readonly IConfiguration _cfg;
     public TokenService(IConfiguration cfg) => _cfg = cfg;
 
-    public string Generate(User user)
+    public string Issue(UserDto user)
     {
         var key       = _cfg["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
         var issuer    = _cfg["Jwt:Issuer"];

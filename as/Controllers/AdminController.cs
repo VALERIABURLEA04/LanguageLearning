@@ -11,7 +11,13 @@ namespace Controllers;
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _db;
-    public AdminController(ApplicationDbContext db) => _db = db;
+    private readonly IWebHostEnvironment  _env;
+
+    public AdminController(ApplicationDbContext db, IWebHostEnvironment env)
+    {
+        _db  = db;
+        _env = env;
+    }
 
     public async Task<IActionResult> Logout()
     {
@@ -38,18 +44,19 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult CreateCourse()
     {
-        ViewBag.FormTitle = "Add Course";
-        return View("CourseForm", new CourseRow { Level = "A1", Language = "English" });
+        ViewBag.FormTitle = "Adaugă curs";
+        return View("CourseForm", new CourseRow { Level = "A1", Language = "English", BackgroundColor = "#FF6B35", Icon = "📚" });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CreateCourse(CourseRow model)
+    public async Task<IActionResult> CreateCourse(CourseRow model, IFormFile? imageFile)
     {
-        if (!ModelState.IsValid) { ViewBag.FormTitle = "Add Course"; return View("CourseForm", model); }
+        if (!ModelState.IsValid) { ViewBag.FormTitle = "Adaugă curs"; return View("CourseForm", model); }
+        model.ImageUrl = await SaveImageAsync(imageFile) ?? string.Empty;
         _db.Courses.Add(model);
         _db.SaveChanges();
-        TempData["Msg"] = $"Course \"{model.Title}\" created.";
+        TempData["Msg"] = $"Cursul \"{model.Title}\" a fost creat.";
         return RedirectToAction(nameof(Courses));
     }
 
@@ -58,24 +65,38 @@ public class AdminController : Controller
     {
         var course = _db.Courses.Find(id);
         if (course == null) return NotFound();
-        ViewBag.FormTitle = "Edit Course";
+        ViewBag.FormTitle = "Editează curs";
         return View("CourseForm", course);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult EditCourse(CourseRow model)
+    public async Task<IActionResult> EditCourse(CourseRow model, IFormFile? imageFile, string? existingImageUrl)
     {
         var course = _db.Courses.Find(model.Id);
         if (course == null) return NotFound();
-        course.Title    = model.Title;
-        course.Language = model.Language;
-        course.Level    = model.Level;
-        course.Price    = model.Price;
-        course.Lessons  = model.Lessons;
-        course.Students = model.Students;
+
+        course.Title           = model.Title;
+        course.Language        = model.Language;
+        course.Level           = model.Level;
+        course.Price           = model.Price;
+        course.OldPrice        = model.OldPrice;
+        course.Lessons         = model.Lessons;
+        course.Students        = model.Students;
+        course.Description     = model.Description;
+        course.LongDescription = model.LongDescription;
+        course.BackgroundColor = model.BackgroundColor;
+        course.Icon            = model.Icon;
+        course.Duration        = model.Duration;
+        course.Frequency       = model.Frequency;
+        course.PriceNote       = model.PriceNote;
+        course.FeaturesText    = model.FeaturesText;
+
+        var newImage = await SaveImageAsync(imageFile);
+        course.ImageUrl = newImage ?? existingImageUrl ?? course.ImageUrl;
+
         _db.SaveChanges();
-        TempData["Msg"] = $"Course \"{course.Title}\" updated.";
+        TempData["Msg"] = $"Cursul \"{course.Title}\" a fost actualizat.";
         return RedirectToAction(nameof(Courses));
     }
 
@@ -88,7 +109,7 @@ public class AdminController : Controller
         {
             _db.Courses.Remove(course);
             _db.SaveChanges();
-            TempData["Msg"] = $"Course \"{course.Title}\" deleted.";
+            TempData["Msg"] = $"Cursul \"{course.Title}\" a fost șters.";
         }
         return RedirectToAction(nameof(Courses));
     }
@@ -100,7 +121,7 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult CreateLesson()
     {
-        ViewBag.FormTitle = "Add Lesson";
+        ViewBag.FormTitle    = "Add Lesson";
         ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
         return View("LessonForm", new LessonRow { Status = "Published", DurationMinutes = 45 });
     }
@@ -111,7 +132,7 @@ public class AdminController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.FormTitle = "Add Lesson";
+            ViewBag.FormTitle    = "Add Lesson";
             ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
             return View("LessonForm", model);
         }
@@ -126,7 +147,7 @@ public class AdminController : Controller
     {
         var lesson = _db.Lessons.Find(id);
         if (lesson == null) return NotFound();
-        ViewBag.FormTitle = "Edit Lesson";
+        ViewBag.FormTitle    = "Edit Lesson";
         ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
         return View("LessonForm", lesson);
     }
@@ -167,7 +188,7 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult CreatePurchase()
     {
-        ViewBag.FormTitle = "Add Purchase";
+        ViewBag.FormTitle    = "Add Purchase";
         ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
         return View("PurchaseForm", new Purchase { PurchaseDate = DateTime.Now, Status = "Completed", PaymentMethod = "Stripe" });
     }
@@ -178,7 +199,7 @@ public class AdminController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.FormTitle = "Add Purchase";
+            ViewBag.FormTitle    = "Add Purchase";
             ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
             return View("PurchaseForm", model);
         }
@@ -193,7 +214,7 @@ public class AdminController : Controller
     {
         var purchase = _db.Purchases.Find(id);
         if (purchase == null) return NotFound();
-        ViewBag.FormTitle = "Edit Purchase";
+        ViewBag.FormTitle    = "Edit Purchase";
         ViewBag.CourseTitles = _db.Courses.Select(c => c.Title).ToList();
         return View("PurchaseForm", purchase);
     }
@@ -227,5 +248,19 @@ public class AdminController : Controller
             TempData["Msg"] = $"Purchase #{id} deleted.";
         }
         return RedirectToAction(nameof(Purchases));
+    }
+
+    // ============================== HELPERS ==============================
+
+    private async Task<string?> SaveImageAsync(IFormFile? file)
+    {
+        if (file == null || file.Length == 0) return null;
+        var dir = Path.Combine(_env.WebRootPath, "uploads", "courses");
+        Directory.CreateDirectory(dir);
+        var ext  = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var name = $"{Guid.NewGuid():N}{ext}";
+        await using var stream = System.IO.File.Create(Path.Combine(dir, name));
+        await file.CopyToAsync(stream);
+        return $"/uploads/courses/{name}";
     }
 }

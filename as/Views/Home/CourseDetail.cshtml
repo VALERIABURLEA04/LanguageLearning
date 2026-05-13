@@ -2,66 +2,128 @@
 @{
     ViewData["Title"] = Model.Title;
     Layout = "_PublicLayout";
-    var lessons = ViewBag.Lessons as List<sa.Models.LessonRow> ?? new List<sa.Models.LessonRow>();
-    var published = lessons.Where(l => l.Status == "Published").ToList();
+    var lessons  = ViewBag.Lessons as List<sa.Models.LessonRow> ?? new List<sa.Models.LessonRow>();
+    var published    = lessons.Where(l => l.Status == "Published").ToList();
     var totalMinutes = published.Sum(l => l.DurationMinutes);
+
+    var price    = (int)Model.Price;
+    var oldPrice = (int)Model.OldPrice;
+    var discount = (price > 0 && oldPrice > price)
+                   ? (int)Math.Round((1 - (double)price / oldPrice) * 100) : 0;
+
+    var features = (Model.FeaturesText ?? string.Empty)
+                   .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                   .ToList();
+    var accentColor = string.IsNullOrEmpty(Model.BackgroundColor) ? "#FF6B35" : Model.BackgroundColor;
 }
 
-<section class="page-title" style="background-image: url('/assets/img/bg/home-bg.jpg'); background-size: cover; background-position: center; padding: 100px 0; color: #fff;">
-    <div class="container">
+<!-- HERO -->
+<section style="background: linear-gradient(135deg, @accentColor 0%, @accentColor 60%, rgba(0,0,0,.35) 100%);
+                padding: 90px 0 70px; color:#fff; position:relative; overflow:hidden;">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="@Model.Title"
+             style="position:absolute;right:0;bottom:0;height:100%;max-width:40%;object-fit:cover;
+                    opacity:.25;pointer-events:none;" />
+    }
+    <div class="container" style="position:relative;z-index:1;">
         <div class="row">
             <div class="col-lg-8">
-                <span style="background: rgba(255,255,255,.15); padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">@Model.Level · @Model.Language</span>
-                <h1 style="font-size: 42px; font-weight: 700; margin-top: 16px;">@Model.Title</h1>
-                <p style="font-size: 16px; opacity: .9;">
-                    <span class="ti-user"></span> @Model.Students students enrolled &nbsp;
-                    <span class="ti-book"></span> @Model.Lessons lessons total &nbsp;
-                    <span class="ti-time"></span> @totalMinutes min published
+                <span style="background:rgba(255,255,255,.2);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">
+                    @Model.Level · @Model.Language
+                </span>
+                @if (!string.IsNullOrEmpty(Model.Icon))
+                {
+                    <span style="font-size:32px;margin-left:10px;vertical-align:middle;">@Model.Icon</span>
+                }
+                <h1 style="font-size:42px;font-weight:700;margin:16px 0 10px;">@Model.Title</h1>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p style="font-size:17px;opacity:.9;margin-bottom:16px;">@Model.Description</p>
+                }
+                <p style="font-size:14px;opacity:.8;">
+                    @if (!string.IsNullOrEmpty(Model.Duration))
+                    {
+                        <span style="margin-right:18px;"><i class="ti-timer"></i> @Model.Duration</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Frequency))
+                    {
+                        <span style="margin-right:18px;"><i class="ti-loop"></i> @Model.Frequency</span>
+                    }
+                    <span style="margin-right:18px;"><i class="ti-user"></i> @Model.Students studenți</span>
+                    <span><i class="ti-book"></i> @Model.Lessons lecții</span>
                 </p>
             </div>
         </div>
     </div>
 </section>
 
+<!-- MAIN CONTENT -->
 <section class="section-padding">
     <div class="container">
         <div class="row">
+            <!-- LEFT: description + lessons -->
             <div class="col-lg-8 col-sm-12">
                 @if (TempData["Msg"] != null)
                 {
-                    <div style="background: #e6f6ea; color: #2e7d32; padding: 14px 18px; border-radius: 10px; margin-bottom: 22px;">
+                    <div style="background:#e6f6ea;color:#2e7d32;padding:14px 18px;border-radius:10px;margin-bottom:22px;">
                         <i class="fa-solid fa-circle-check"></i> @TempData["Msg"]
                     </div>
                 }
 
-                <h2 style="margin-bottom: 18px;">About this course</h2>
-                <p style="color: #555; line-height: 1.7;">
-                    The <b>@Model.Title</b> track is a CEFR <b>@Model.Level</b> programme covering @Model.Lessons lessons.
-                    Each session blends interactive grammar, vocabulary in context, and live speaking practice with your tutor.
-                    By the end, you will hold confident conversations at the @Model.Level level and be ready for the next stage.
-                </p>
+                <h2 style="margin-bottom:18px;">Despre acest curs</h2>
+                @if (!string.IsNullOrEmpty(Model.LongDescription))
+                {
+                    <p style="color:#555;line-height:1.8;font-size:16px;">@Model.LongDescription</p>
+                }
+                else
+                {
+                    <p style="color:#555;line-height:1.8;">
+                        Cursul <b>@Model.Title</b> este un program CEFR <b>@Model.Level</b> care acoperă @Model.Lessons lecții.
+                        Fiecare sesiune combină gramatică interactivă, vocabular în context și practică live de conversație cu tutorele.
+                    </p>
+                }
 
-                <h2 style="margin: 36px 0 18px;">Lessons (@published.Count published)</h2>
+                @if (features.Any())
+                {
+                    <h3 style="margin:32px 0 16px;font-size:20px;">Ce vei dobândi</h3>
+                    <div class="row">
+                        @foreach (var f in features)
+                        {
+                            <div class="col-md-6" style="margin-bottom:10px;">
+                                <div style="display:flex;align-items:flex-start;gap:10px;">
+                                    <span style="color:@accentColor;font-size:18px;margin-top:2px;">✓</span>
+                                    <span style="color:#444;">@f</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
 
+                <h2 style="margin:40px 0 18px;">Lecții (@published.Count publicate)</h2>
                 @if (!published.Any())
                 {
-                    <div style="background: #fff8e6; border: 1px solid #ffe0a3; padding: 18px; border-radius: 10px; color: #8a5a00;">
-                        <i class="fa-solid fa-circle-info"></i> No published lessons yet — your tutor will release them as you progress.
+                    <div style="background:#fff8e6;border:1px solid #ffe0a3;padding:18px;border-radius:10px;color:#8a5a00;">
+                        <i class="fa-solid fa-circle-info"></i> Nicio lecție publicată momentan — tutorele le va activa pe parcurs.
                     </div>
                 }
                 else
                 {
-                    <div style="background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.05); overflow: hidden;">
+                    <div style="background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.05);overflow:hidden;">
                         @{ int n = 1; }
                         @foreach (var l in published)
                         {
-                            <div style="display: flex; align-items: center; padding: 18px 22px; border-bottom: 1px solid #f1f3f5;">
-                                <div style="width: 44px; height: 44px; border-radius: 50%; background: #fff1eb; color: #ff6a3d; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 16px;">@n</div>
-                                <div style="flex: 1;">
-                                    <h4 style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #1f2a44;">@l.Title</h4>
-                                    <small style="color: #6c757d;"><span class="ti-time"></span> @l.DurationMinutes min · <span class="ti-video-camera"></span> Video + practice</small>
+                            <div style="display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid #f1f3f5;">
+                                <div style="width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.06);
+                                            color:@accentColor;display:flex;align-items:center;justify-content:center;
+                                            font-weight:700;margin-right:16px;flex-shrink:0;">@n</div>
+                                <div style="flex:1;">
+                                    <h4 style="margin:0 0 4px;font-size:16px;font-weight:600;color:#1f2a44;">@l.Title</h4>
+                                    <small style="color:#6c757d;"><span class="ti-time"></span> @l.DurationMinutes min</small>
                                 </div>
-                                <a href="#" style="color: #ff6a3d; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-play"></i> Preview</a>
+                                <span style="color:@accentColor;font-weight:600;font-size:13px;">
+                                    <i class="fa-solid fa-play"></i> Preview
+                                </span>
                             </div>
                             n++;
                         }
@@ -69,26 +131,181 @@
                 }
             </div>
 
+            <!-- RIGHT: sticky CTA card -->
             <div class="col-lg-4 col-sm-12">
-                <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.08); padding: 28px; position: sticky; top: 100px;">
-                    <div style="font-size: 36px; font-weight: 700; color: #1f2a44;">$@Model.Price</div>
-                    <p style="color: #6c757d; margin-bottom: 22px;">Lifetime access · cancel anytime</p>
-
-                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })" class="btn_one" style="display: block; text-align: center; margin-bottom: 12px;">Start learning now <i class="ti-arrow-top-right"></i></a>
-                    <a href="@Url.Action("Courses", "Home")" style="display: block; text-align: center; padding: 12px; color: #6c757d; text-decoration: none; font-weight: 500;">Browse all courses</a>
-
-                    <hr style="margin: 22px 0;">
-
-                    <h5 style="font-weight: 700; margin-bottom: 14px;">This course includes</h5>
-                    <ul style="list-style: none; padding: 0; color: #555;">
-                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> @Model.Lessons total lessons</li>
-                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Live tutor feedback</li>
-                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Downloadable resources</li>
-                        <li style="margin-bottom: 8px;"><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Completion certificate</li>
-                        <li><span class="ti-check" style="color: #2e7d32; margin-right: 8px;"></span> Mobile + desktop access</li>
+                <div style="background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.1);
+                            padding:28px;position:sticky;top:100px;">
+                    @if (price > 0)
+                    {
+                        <div style="margin-bottom:16px;">
+                            <span style="font-size:32px;font-weight:700;color:@accentColor;">
+                                @price.ToString("N0") MDL
+                            </span>
+                            @if (oldPrice > price)
+                            {
+                                <span style="color:#999;text-decoration:line-through;font-size:16px;margin-left:8px;">
+                                    @oldPrice.ToString("N0") MDL
+                                </span>
+                                <span style="background:@accentColor;color:#fff;font-size:11px;font-weight:700;
+                                             padding:3px 9px;border-radius:12px;margin-left:6px;">-@discount%</span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.PriceNote))
+                        {
+                            <p style="color:#6c757d;font-size:13px;margin-bottom:16px;">@Model.PriceNote</p>
+                        }
+                    }
+                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })" class="btn_one"
+                       style="display:block;text-align:center;margin-bottom:10px;background:@accentColor;
+                              border-color:@accentColor;">
+                        Înscrie-te acum <i class="ti-arrow-top-right"></i>
+                    </a>
+                    <a href="@Url.Action("Courses", "Home")"
+                       style="display:block;text-align:center;padding:11px;color:#6c757d;text-decoration:none;font-weight:500;">
+                        Vezi toate cursurile
+                    </a>
+                    <hr style="margin:22px 0;">
+                    <h5 style="font-weight:700;margin-bottom:14px;">Cursul include</h5>
+                    <ul style="list-style:none;padding:0;color:#555;">
+                        @if (Model.Lessons > 0)
+                        {
+                            <li style="margin-bottom:8px;">
+                                <span class="ti-check" style="color:@accentColor;margin-right:8px;"></span>
+                                @Model.Lessons lecții totale
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Duration))
+                        {
+                            <li style="margin-bottom:8px;">
+                                <span class="ti-check" style="color:@accentColor;margin-right:8px;"></span>
+                                @Model.Duration
+                            </li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Frequency))
+                        {
+                            <li style="margin-bottom:8px;">
+                                <span class="ti-check" style="color:@accentColor;margin-right:8px;"></span>
+                                @Model.Frequency
+                            </li>
+                        }
+                        @foreach (var f in features.Take(3))
+                        {
+                            <li style="margin-bottom:8px;">
+                                <span class="ti-check" style="color:@accentColor;margin-right:8px;"></span> @f
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section class="section-padding" style="background:#f4f7ff;">
+    <div class="container">
+        <div class="section-title text-center">
+            <h2>Tarife</h2>
+            <p>Alege varianta potrivită. Toate pachetele includ acces la platformă și suport din partea profesorului.</p>
+        </div>
+        <div class="row justify-content-center">
+
+            <!-- Plată în rate -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div style="background:#fff;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.08);
+                            padding:32px 30px;margin-bottom:30px;display:flex;flex-direction:column;">
+                    <div style="font-size:13px;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:1px;">Plată în rate</div>
+                    <h3 style="font-size:22px;font-weight:700;margin:10px 0 18px;color:#1f2a44;">3 rate lunare</h3>
+                    <div style="display:flex;align-items:baseline;gap:8px;">
+                        <span style="color:#16a34a;font-size:32px;font-weight:700;">@((price / 3).ToString("N0")) MDL</span>
+                        <span style="color:#6c757d;font-size:14px;">/ lună</span>
+                    </div>
+                    <div style="color:#6c757d;font-size:14px;margin-bottom:18px;">Total: @price.ToString("N0") MDL · fără dobândă</div>
+                    <ul style="list-style:none;padding:0;color:#555;margin-bottom:24px;flex-grow:1;">
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Acces complet din prima zi</li>
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Fără comision suplimentar</li>
+                        <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Anulare în primele 14 zile</li>
+                    </ul>
+                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                       style="display:block;text-align:center;background:#e9ecf5;color:#1f2a44;
+                              padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
+                        Alege plata în rate
+                    </a>
+                </div>
+            </div>
+
+            <!-- Plată integrală -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div style="background:#fff;border-radius:22px;box-shadow:0 10px 32px rgba(22,163,74,.18);
+                            padding:32px 30px;margin-bottom:30px;display:flex;flex-direction:column;
+                            border:2px solid #16a34a;position:relative;">
+                    <span style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+                                 background:#16a34a;color:#fff;font-size:12px;font-weight:700;
+                                 padding:6px 16px;border-radius:14px;letter-spacing:.5px;white-space:nowrap;">
+                        CEL MAI POPULAR
+                    </span>
+                    <div style="font-size:13px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:1px;">Plată integrală</div>
+                    <h3 style="font-size:22px;font-weight:700;margin:10px 0 18px;color:#1f2a44;">O singură plată</h3>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="color:#16a34a;font-size:36px;font-weight:700;">@price.ToString("N0") MDL</span>
+                        @if (discount > 0)
+                        {
+                            <span style="background:#16a34a;color:#fff;font-size:12px;font-weight:700;
+                                         padding:3px 10px;border-radius:14px;">-@discount%</span>
+                        }
+                    </div>
+                    @if (oldPrice > price)
+                    {
+                        <div style="color:#9aa0a6;text-decoration:line-through;font-weight:600;margin-bottom:18px;">
+                            @oldPrice.ToString("N0") MDL
+                        </div>
+                    }
+                    <ul style="list-style:none;padding:0;color:#555;margin-bottom:24px;flex-grow:1;">
+                        @if (discount > 0) { <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Reducere -@discount% activă</li> }
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Materiale tipărite gratuite</li>
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Certificat de absolvire</li>
+                        <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Garanție 14 zile</li>
+                    </ul>
+                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                       style="display:block;text-align:center;background:#16a34a;color:#fff;
+                              padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
+                        Înscrie-te acum
+                    </a>
+                </div>
+            </div>
+
+            <!-- Premium 1:1 -->
+            <div class="col-lg-4 col-md-6 col-sm-12">
+                <div style="background:#fff;border-radius:22px;box-shadow:0 6px 24px rgba(0,0,0,.08);
+                            padding:32px 30px;margin-bottom:30px;display:flex;flex-direction:column;">
+                    <div style="font-size:13px;font-weight:700;color:#6c757d;text-transform:uppercase;letter-spacing:1px;">Premium 1:1</div>
+                    <h3 style="font-size:22px;font-weight:700;margin:10px 0 18px;color:#1f2a44;">Curs + tutore dedicat</h3>
+                    <div style="display:flex;align-items:baseline;gap:8px;">
+                        <span style="color:#16a34a;font-size:32px;font-weight:700;">@((price * 2).ToString("N0")) MDL</span>
+                    </div>
+                    <div style="color:#6c757d;font-size:14px;margin-bottom:18px;">
+                        sau @((price * 2 / 3).ToString("N0")) MDL × 3 rate
+                    </div>
+                    <ul style="list-style:none;padding:0;color:#555;margin-bottom:24px;flex-grow:1;">
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Tot ce e inclus la plata integrală</li>
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> 8 sesiuni 1:1 cu tutorele</li>
+                        <li style="margin-bottom:8px;"><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Plan de studiu personalizat</li>
+                        <li><span class="ti-check" style="color:#16a34a;margin-right:8px;"></span> Suport prin chat 7 zile/7</li>
+                    </ul>
+                    <a href="@Url.Action("Enroll", "Home", new { id = Model.Id })"
+                       style="display:block;text-align:center;background:#e9ecf5;color:#1f2a44;
+                              padding:13px;border-radius:26px;text-decoration:none;font-weight:700;">
+                        Alege Premium
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        <div class="text-center" style="margin-top:10px;">
+            <small style="color:#6c757d;">
+                <i class="fa-solid fa-circle-info"></i>
+                Toate prețurile includ TVA. Rambursare integrală în primele 14 zile.
+            </small>
         </div>
     </div>
 </section>

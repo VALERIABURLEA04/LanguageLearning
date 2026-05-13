@@ -3,22 +3,36 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyWebApplication.BusinessLogic.Factories;
-using sa.Models;
-using sa.Services;
+using MyWebApplication.BusinessLogic.Command;
+using MyWebApplication.BusinessLogic.Core;
+using MyWebApplication.BusinessLogic.Core.Dtos;
+using MyWebApplication.BusinessLogic.Facade;
 
 namespace Controllers;
 
 public class HomeController : Controller
 {
     private readonly ApplicationDbContext _db;
-    private readonly TokenService _tokens;
-    private readonly PostLoginStrategyFactory _postLogin;
-    public HomeController(ApplicationDbContext db, TokenService tokens, PostLoginStrategyFactory postLogin)
+    private readonly AuthFacade _auth;
+    private readonly EnrollStudentCommand _enroll;
+    private readonly ProfileService _profile;
+    private readonly CourseQueryService _courseQuery;
+    private readonly CheckoutCommand _checkout;
+
+    public HomeController(
+        ApplicationDbContext db,
+        AuthFacade auth,
+        EnrollStudentCommand enroll,
+        ProfileService profile,
+        CourseQueryService courseQuery,
+        CheckoutCommand checkout)
     {
         _db = db;
-        _tokens = tokens;
-        _postLogin = postLogin;
+        _auth = auth;
+        _enroll = enroll;
+        _profile = profile;
+        _courseQuery = courseQuery;
+        _checkout = checkout;
     }
 
     public IActionResult Index()
@@ -32,86 +46,113 @@ public class HomeController : Controller
 
     public IActionResult Privacy() => View();
 
-    public IActionResult Courses() => View(_db.Courses.OrderBy(c => c.Id).ToList());
+    public IActionResult Courses(string? q)
+    {
+        var query = _db.Courses.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(q))
+            query = query.Where(c => c.Title.Contains(q) || c.Description.Contains(q) || c.Level.Contains(q));
+        ViewBag.Query = q ?? string.Empty;
+        return View(query.OrderBy(c => c.Id).ToList());
+    }
 
     public IActionResult CourseDetail(int id)
     {
-        var course = _db.Courses.Find(id);
-        if (course == null) return NotFound();
-        ViewBag.Lessons = _db.Lessons.Where(l => l.CourseTitle == course.Title).ToList();
+        var bundle = _courseQuery.GetWithLessons(id);
+        if (bundle is null) return NotFound();
+
+        var c = bundle.Value.Course;
+        var course = new sa.Models.CourseRow
+        {
+            Id = c.Id, Title = c.Title, Language = c.Language, Level = c.Level,
+            Price = c.Price, OldPrice = c.OldPrice, Students = c.Students, Lessons = c.Lessons,
+            Description = c.Description, LongDescription = c.LongDescription,
+            ImageUrl = c.ImageUrl, BackgroundColor = c.BackgroundColor,
+            Icon = c.Icon, Duration = c.Duration, Frequency = c.Frequency,
+            PriceNote = c.PriceNote, FeaturesText = c.FeaturesText
+        };
+        ViewBag.Lessons = bundle.Value.Lessons
+            .Select(l => new sa.Models.LessonRow { Id = l.Id, Title = l.Title, CourseTitle = l.CourseTitle, DurationMinutes = l.DurationMinutes, Status = l.Status })
+            .ToList();
         return View(course);
     }
 
     public IActionResult Enroll(int id)
     {
-        var course = _db.Courses.Find(id);
-        if (course == null) return NotFound();
-        course.Students += 1;
-        _db.SaveChanges();
-        TempData["Msg"] = $"You're enrolled in \"{course.Title}\". Start with Lesson 1 below.";
+        var result = _enroll.Execute(id);
+        if (!result.Success) return NotFound();
+
+        TempData["Msg"] = $"You're enrolled in \"{result.CourseTitle}\". Start with Lesson 1 below.";
         return RedirectToAction(nameof(CourseDetail), new { id });
     }
 
     public IActionResult Contact() => View();
 
-    // ========== AUTH ==========
+    public IActionResult Category(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return NotFound();
+        var category = sa.Models.CourseCategory.FindBySlug(id);
+        if (category is null) return NotFound();
+        return View(category);
+    }
 
     [HttpGet]
-    public IActionResult Login() => View();
+    public IActionResult Checkout(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return NotFound();
+        var category = sa.Models.CourseCategory.FindBySlug(id);
+        if (category is null) return NotFound();
+        return View(category);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Checkout(string id, string fullName, string email, string phone, string paymentMethod, string plan)
+    {
+        var category = sa.Models.CourseCategory.FindBySlug(id);
+        if (category is null) return NotFound();
+
+        var result = _checkout.Execute(new CheckoutRequest
+        {
+            CategorySlug   = category.Slug,
+            CourseTitle    = category.Title,
+            FullName       = fullName,
+            Email          = email,
+            Phone          = phone,
+            PaymentMethod  = paymentMethod,
+            Plan           = plan,
+            TotalAmount    = category.Price
+        });
+
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Error;
+            return RedirectToAction(nameof(Checkout), new { id });
+        }
+
+        TempData["Msg"] = result.Message;
+        return RedirectToAction(nameof(Category), new { id });
+    }
+
+    // ========== AUTH ==========
+
+    [HttpGet] public IActionResult Login() => View();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string email, string password)
     {
-        var user = _db.Users.FirstOrDefault(u => u.Email == email);
-        if (user == null || !PasswordHasher.Verify(password ?? "", user.PasswordHash))
-        {
-            ViewBag.Error = "Invalid email or password.";
-            return View();
-        }
-
-        await SignInUserAsync(user);
-        TempData["AuthToken"] = _tokens.Generate(user);
-
-        var outcome = _postLogin.Create(user.IsAdmin).Execute(user.Name);
-        TempData["Msg"] = outcome.WelcomeMessage;
-        return RedirectToAction(outcome.RedirectAction, outcome.RedirectController);
+        var result = _auth.Login(email, password);
+        return await CompleteAuthAsync(result);
     }
 
-    [HttpGet]
-    public IActionResult Register() => View();
+    [HttpGet] public IActionResult Register() => View();
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(string name, string email, string password)
     {
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
-            ViewBag.Error = "All fields are required.";
-            return View();
-        }
-        if (_db.Users.Any(u => u.Email == email))
-        {
-            ViewBag.Error = "An account with this email already exists.";
-            return View();
-        }
-
-        var user = new User
-        {
-            Name         = name.Trim(),
-            Email        = email.Trim(),
-            PasswordHash = PasswordHasher.Hash(password),
-            IsAdmin      = false
-        };
-        _db.Users.Add(user);
-        _db.SaveChanges();
-
-        await SignInUserAsync(user);
-        TempData["AuthToken"] = _tokens.Generate(user);
-
-        var outcome = _postLogin.Create(user.IsAdmin).Execute(user.Name);
-        TempData["Msg"] = outcome.WelcomeMessage;
-        return RedirectToAction(outcome.RedirectAction, outcome.RedirectController);
+        var result = _auth.Register(name, email, password);
+        return await CompleteAuthAsync(result);
     }
 
     public async Task<IActionResult> Logout()
@@ -121,7 +162,21 @@ public class HomeController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task SignInUserAsync(User user)
+    private async Task<IActionResult> CompleteAuthAsync(AuthResult result)
+    {
+        if (!result.Success || result.User is null || result.Outcome is null)
+        {
+            ViewBag.Error = result.Error;
+            return View();
+        }
+
+        await SignInUserAsync(result.User);
+        TempData["AuthToken"] = result.Token;
+        TempData["Msg"] = result.Outcome.WelcomeMessage;
+        return RedirectToAction(result.Outcome.RedirectAction, result.Outcome.RedirectController);
+    }
+
+    private async Task SignInUserAsync(UserDto user)
     {
         var claims = new List<Claim>
         {
@@ -143,19 +198,20 @@ public class HomeController : Controller
         var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!int.TryParse(idStr, out var id)) return RedirectToAction(nameof(Login));
 
-        var user = _db.Users.Find(id);
-        if (user == null) return RedirectToAction(nameof(Login));
+        var bundle = _profile.GetForUser(id);
+        if (bundle is null) return RedirectToAction(nameof(Login));
 
-        var purchases = _db.Purchases
-            .Where(p => p.StudentName == user.Name)
-            .OrderByDescending(p => p.PurchaseDate)
+        ViewBag.User = new sa.Models.User
+        {
+            Id = bundle.User.Id, Name = bundle.User.Name, Email = bundle.User.Email,
+            PasswordHash = bundle.User.PasswordHash, IsAdmin = bundle.User.IsAdmin, CreatedAt = bundle.User.CreatedAt
+        };
+        ViewBag.Purchases = bundle.Purchases
+            .Select(p => new sa.Models.Purchase { Id = p.Id, StudentName = p.StudentName, CourseTitle = p.CourseTitle, Amount = p.Amount, PurchaseDate = p.PurchaseDate, Status = p.Status, PaymentMethod = p.PaymentMethod })
             .ToList();
-        var enrolledTitles = purchases.Select(p => p.CourseTitle).Distinct().ToList();
-        var enrolled = _db.Courses.Where(c => enrolledTitles.Contains(c.Title)).ToList();
-
-        ViewBag.User = user;
-        ViewBag.Purchases = purchases;
-        ViewBag.EnrolledCourses = enrolled;
+        ViewBag.EnrolledCourses = bundle.EnrolledCourses
+            .Select(c => new sa.Models.CourseRow { Id = c.Id, Title = c.Title, Language = c.Language, Level = c.Level, Price = c.Price, Students = c.Students, Lessons = c.Lessons })
+            .ToList();
         return View();
     }
 }

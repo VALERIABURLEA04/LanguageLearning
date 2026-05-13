@@ -4,50 +4,155 @@
     Layout = "_AdminLayout";
     var isEdit = Model.Id > 0;
     var action = isEdit ? "EditCourse" : "CreateCourse";
+    var bg = string.IsNullOrEmpty(Model.BackgroundColor) ? "#FF6B35" : Model.BackgroundColor;
 }
 
 <div class="admin-topbar">
     <h1>@ViewBag.FormTitle</h1>
-    <a href="@Url.Action("Courses", "Admin")" class="btn-action btn-edit"><i class="fa-solid fa-arrow-left"></i> Back</a>
+    <a href="@Url.Action("Courses", "Admin")" class="btn-action btn-edit"><i class="fa-solid fa-arrow-left"></i> Înapoi</a>
 </div>
 
 <div class="form-card">
-    <form asp-action="@action" asp-controller="Admin" method="post">
+    <form asp-action="@action" asp-controller="Admin" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="Id" />
+        @if (isEdit)
+        {
+            <input type="hidden" name="existingImageUrl" value="@Model.ImageUrl" />
+        }
 
+        <!-- Informații de bază -->
+        <h5 class="form-section-title">Informații de bază</h5>
         <div class="mb-3">
-            <label asp-for="Title"></label>
-            <input asp-for="Title" class="form-control" required />
+            <label asp-for="Title">Titlu curs *</label>
+            <input asp-for="Title" class="form-control" required placeholder="ex: Engleză pentru adulți" />
         </div>
-
         <div class="row">
-            <div class="col-md-6 mb-3">
-                <label asp-for="Language"></label>
-                <input asp-for="Language" class="form-control" required />
+            <div class="col-md-4 mb-3">
+                <label asp-for="Language">Limbă *</label>
+                <input asp-for="Language" class="form-control" required placeholder="English" />
             </div>
-            <div class="col-md-6 mb-3">
-                <label asp-for="Level"></label>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Level">Nivel CEFR *</label>
                 <select asp-for="Level" class="form-select">
                     <option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option>
+                    <option value="A1 — C2">A1 — C2 (Toate)</option>
+                    <option value="Orice nivel">Orice nivel</option>
+                    <option value="B1 — B2">B1 — B2</option>
+                    <option value="B2 — C1">B2 — C1</option>
+                    <option value="A2 — B2">A2 — B2</option>
                 </select>
             </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Icon">Emoji icon</label>
+                <input asp-for="Icon" class="form-control" placeholder="📚" style="font-size:20px;" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description">Descriere scurtă</label>
+            <input asp-for="Description" class="form-control" placeholder="1–2 propoziții, afișate pe card" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="LongDescription">Descriere completă</label>
+            <textarea asp-for="LongDescription" class="form-control" rows="5"
+                      placeholder="Text complet afișat pe pagina cursului..."></textarea>
         </div>
 
+        <!-- Program -->
+        <h5 class="form-section-title mt-4">Program</h5>
         <div class="row">
-            <div class="col-md-4 mb-3">
-                <label asp-for="Price">Price ($)</label>
-                <input asp-for="Price" type="number" step="0.01" class="form-control" required />
+            <div class="col-md-6 mb-3">
+                <label asp-for="Duration">Durata cursului</label>
+                <input asp-for="Duration" class="form-control" placeholder="ex: 12 săptămâni" />
             </div>
-            <div class="col-md-4 mb-3">
-                <label asp-for="Lessons"></label>
-                <input asp-for="Lessons" type="number" class="form-control" />
-            </div>
-            <div class="col-md-4 mb-3">
-                <label asp-for="Students"></label>
-                <input asp-for="Students" type="number" class="form-control" />
+            <div class="col-md-6 mb-3">
+                <label asp-for="Frequency">Frecvența lecțiilor</label>
+                <input asp-for="Frequency" class="form-control" placeholder="ex: 2 lecții pe săptămână" />
             </div>
         </div>
 
-        <button type="submit" class="btn-primary-orange"><i class="fa-solid fa-floppy-disk"></i> @(isEdit ? "Update" : "Create")</button>
+        <!-- Prețuri -->
+        <h5 class="form-section-title mt-4">Prețuri (MDL)</h5>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label asp-for="Price">Preț curent (MDL) *</label>
+                <input asp-for="Price" type="number" step="1" min="0" class="form-control" required placeholder="5490" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label asp-for="OldPrice">Preț vechi (MDL)</label>
+                <input asp-for="OldPrice" type="number" step="1" min="0" class="form-control" placeholder="0 = fără reducere" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label asp-for="Lessons">Număr lecții</label>
+                <input asp-for="Lessons" type="number" min="0" class="form-control" placeholder="0" />
+            </div>
+            <div class="col-md-3 mb-3">
+                <label asp-for="Students">Studenți înscriși</label>
+                <input asp-for="Students" type="number" min="0" class="form-control" placeholder="0" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="PriceNote">Notă preț</label>
+            <input asp-for="PriceNote" class="form-control" placeholder="ex: Opțiune de plată în rate" />
+        </div>
+
+        <!-- Aspect vizual -->
+        <h5 class="form-section-title mt-4">Aspect vizual</h5>
+        <div class="row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label>Culoare card</label>
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="color" id="colorPicker" value="@bg"
+                           style="width:46px;height:40px;border:1px solid #ddd;border-radius:8px;padding:2px;cursor:pointer;" />
+                    <input asp-for="BackgroundColor" type="text" class="form-control" id="colorText"
+                           placeholder="#FF6B35" style="font-family:monospace;" />
+                </div>
+                <small style="color:#6c757d;">Culoarea cardului de pe pagina principală</small>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label>Imagine curs</label>
+                @if (isEdit && !string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div style="margin-bottom:8px;">
+                        <img src="@Model.ImageUrl" alt="imagine curentă"
+                             style="max-height:90px;border-radius:10px;border:1px solid #e2e8f0;object-fit:cover;" />
+                        <small style="color:#6c757d;display:block;margin-top:4px;">
+                            Imagine curentă — alege un fișier nou pentru a o înlocui
+                        </small>
+                    </div>
+                }
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                <small style="color:#6c757d;">JPG, PNG, WebP — max 5 MB</small>
+            </div>
+        </div>
+
+        <!-- Beneficii -->
+        <h5 class="form-section-title mt-4">Beneficii incluse</h5>
+        <div class="mb-4">
+            <label asp-for="FeaturesText">
+                Listă beneficii <small style="color:#6c757d;font-weight:400;">(câte unul pe linie)</small>
+            </label>
+            <textarea asp-for="FeaturesText" class="form-control" rows="7"
+                      placeholder="Grupuri mici (max 6 cursanți)&#10;Profesori certificați CELTA / DELTA&#10;Feedback 1:1 săptămânal&#10;Materiale Cambridge aliniate CEFR&#10;Certificat de absolvire"></textarea>
+        </div>
+
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn-primary-orange">
+                <i class="fa-solid fa-floppy-disk"></i> @(isEdit ? "Salvează modificările" : "Creează cursul")
+            </button>
+            <a href="@Url.Action("Courses", "Admin")" class="btn-action btn-edit" style="padding:10px 22px;">
+                Anulează
+            </a>
+        </div>
     </form>
 </div>
+
+<script>
+    const picker = document.getElementById('colorPicker');
+    const text   = document.getElementById('colorText');
+    if (picker && text) {
+        picker.addEventListener('input', () => text.value = picker.value);
+        text.addEventListener('input', () => {
+            if (/^#[0-9a-fA-F]{6}$/.test(text.value)) picker.value = text.value;
+        });
+    }
+</script>

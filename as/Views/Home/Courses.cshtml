@@ -1,40 +1,103 @@
 @model List<sa.Models.CourseRow>
 @{
-    ViewData["Title"] = "Courses";
+    ViewData["Title"] = "Cursuri";
     Layout = "_PublicLayout";
-    var imgs = new[] { "1", "2", "3", "4", "5", "6" };
+    var q = ViewBag.Query as string ?? string.Empty;
+    var hasQuery = !string.IsNullOrWhiteSpace(q);
+    var fallbackColors = new[] { "#FF6B35", "#FFB800", "#7B2FBE", "#00B4D8", "#1B3A6B", "#0CA678" };
 }
 
-<section class="page-title" style="background-image: url('/assets/img/bg/home-bg.jpg'); background-size: cover; background-position: center; padding: 100px 0; text-align: center; color: #fff;">
+<section class="page-title" style="background-image: url('/assets/img/bg/home-bg.jpg'); background-size: cover; background-position: center; padding: 80px 0; text-align: center; color: #fff;">
     <div class="container">
-        <h1 style="font-size: 42px; font-weight: 700;">English courses</h1>
-        <p style="font-size: 16px; opacity: .9;">All levels — from your first word to Cambridge proficiency.</p>
+        <h1 style="font-size: 38px; font-weight: 700; margin-bottom: 24px;">
+            @if (hasQuery) { <text>Rezultate pentru &bdquo;@q&rdquo;</text> } else { <text>Toate cursurile</text> }
+        </h1>
+        <form action="@Url.Action("Courses", "Home")" method="get"
+              style="display:flex; max-width:540px; margin:0 auto; background:#fff; border-radius:50px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.15);">
+            <input type="text" name="q" value="@q"
+                   placeholder="Caută un curs (ex: adulți, BAC, TOEFL)..."
+                   style="flex:1; border:none; padding:16px 24px; font-size:15px; outline:none; color:#1f2a44;" />
+            <button type="submit"
+                    style="background:#5b5bff; border:none; color:#fff; padding:0 28px; font-weight:600; font-size:15px; cursor:pointer; white-space:nowrap;">
+                Caută <i class="ti-arrow-top-right"></i>
+            </button>
+        </form>
     </div>
 </section>
 
-<section class="course_area section-padding">
+<section class="section-padding">
     <div class="container">
-        <div class="section-title text-center">
-            <h2>@Model.Count courses available</h2>
-            <p>Each track is CEFR-aligned and taught by certified tutors.</p>
-        </div>
-        <div class="row">
-            @{ int idx = 0; }
-            @foreach (var c in Model)
-            {
-                <div class="col-lg-4 col-sm-6 col-xs-12 wow fadeInUp" data-wow-duration="1s" data-wow-delay="0.1s">
-                    <div class="single_blog" style="margin-bottom: 30px;">
-                        <img src="~/assets/img/course/@(imgs[idx % imgs.Length]).png" class="img-fluid" alt="@c.Title" />
-                        <div class="content_box">
-                            <span><b>@c.Level</b> · @c.Language · @c.Lessons lessons</span>
-                            <h2><a href="@Url.Action("CourseDetail", "Home", new { id = c.Id })">@c.Title</a></h2>
-                            <p><span class="ti-user"></span> @c.Students students &nbsp; <span class="ti-tag"></span> <b>$@c.Price</b></p>
-                            <a class="btn_one" href="@Url.Action("CourseDetail", "Home", new { id = c.Id })">View lessons <i class="ti-arrow-top-right"></i></a>
-                        </div>
+        @if (hasQuery)
+        {
+            <p style="color:#6c757d; margin-bottom:28px;">
+                @Model.Count @(Model.Count == 1 ? "curs găsit" : "cursuri găsite") pentru <b>&bdquo;@q&rdquo;</b>
+                — <a href="@Url.Action("Courses", "Home")" style="color:#5b5bff;">Vezi toate</a>
+            </p>
+        }
+
+        @if (!Model.Any())
+        {
+            <div style="text-align:center; padding:60px 0;">
+                <div style="font-size:48px; margin-bottom:16px;">🔍</div>
+                <h3 style="color:#1f2a44;">Niciun curs găsit</h3>
+                <p style="color:#6c757d;">Încearcă un alt termen de căutare.</p>
+                <a href="@Url.Action("Courses", "Home")" class="btn_one" style="margin-top:16px; display:inline-block;">
+                    Vezi toate cursurile
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @{ int idx = 0; }
+                @foreach (var c in Model)
+                {
+                    var bg = !string.IsNullOrEmpty(c.BackgroundColor) ? c.BackgroundColor : fallbackColors[idx % fallbackColors.Length];
+                    <div class="col-lg-4 col-md-6 col-sm-6 wow fadeInUp" data-wow-duration="1s" data-wow-delay="@(0.05 * idx + 0.1)s" style="margin-bottom:30px;">
+                        <a href="@Url.Action("CourseDetail", "Home", new { id = c.Id })" style="text-decoration:none; color:inherit; display:block;">
+                            <div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.08); transition:transform .2s,box-shadow .2s;" class="course-card">
+                                @if (!string.IsNullOrEmpty(c.ImageUrl))
+                                {
+                                    <img src="@c.ImageUrl" alt="@c.Title"
+                                         style="width:100%; height:200px; object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div style="height:140px; background:@bg; display:flex; align-items:center; justify-content:center; font-size:52px;">
+                                        @(string.IsNullOrEmpty(c.Icon) ? "📚" : c.Icon)
+                                    </div>
+                                }
+                                <div style="padding:20px 22px;">
+                                    <span style="font-size:12px; font-weight:600; color:#6c757d;">@c.Level · @c.Language</span>
+                                    <h3 style="font-size:18px; font-weight:700; color:#1f2a44; margin:8px 0 6px;">@c.Title</h3>
+                                    @if (!string.IsNullOrEmpty(c.Description))
+                                    {
+                                        <p style="font-size:14px; color:#6c757d; margin-bottom:12px; line-height:1.5;">@c.Description</p>
+                                    }
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                                        <div>
+                                            @if (c.Price > 0)
+                                            {
+                                                <span style="font-weight:700; color:@bg; font-size:16px;">@((int)c.Price) MDL</span>
+                                                @if (c.OldPrice > c.Price)
+                                                {
+                                                    <span style="color:#aaa; text-decoration:line-through; font-size:13px; margin-left:6px;">@((int)c.OldPrice)</span>
+                                                }
+                                            }
+                                        </div>
+                                        <span style="font-size:13px; color:#6c757d;">@c.Lessons lecții</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                </div>
-                idx++;
-            }
-        </div>
+                    idx++;
+                }
+            </div>
+        }
     </div>
 </section>
+
+<style>
+    .course-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,.13) !important; }
+</style>
