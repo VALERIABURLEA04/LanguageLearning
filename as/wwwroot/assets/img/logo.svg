@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" width="420" height="80">
+  <!-- Graduation cap icon -->
+  <g transform="translate(4, 10) scale(1.8)">
+    <!-- cap top (diamond shape) -->
+    <polygon points="16,2 30,9 16,16 2,9" fill="#4F46E5"/>
+    <!-- cap brim -->
+    <rect x="10" y="13" width="12" height="2" rx="1" fill="#4F46E5"/>
+    <!-- tassel string -->
+    <rect x="29" y="9" width="1.5" height="8" rx="0.75" fill="#4F46E5"/>
+    <!-- tassel end -->
+    <circle cx="29.75" cy="18" r="2" fill="#4F46E5"/>
+  </g>
+  <!-- SpeakUp text -->
+  <text x="76" y="54" font-family="'DM Sans', 'Segoe UI', Arial, sans-serif" font-size="64" font-weight="700" fill="#1f2a44" letter-spacing="-1">SpeakUp</text>
+</svg>
