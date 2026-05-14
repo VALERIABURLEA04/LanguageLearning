@@ -62,7 +62,7 @@ public class CheckoutApiController : ControllerBase
         if (category is null)
             return NotFound(new { error = $"Categoria '{input.CategorySlug}' nu a fost găsită." });
 
-        var result = _checkout.Execute(new CheckoutRequest
+        _checkout.Setup(new CheckoutRequest
         {
             CategorySlug  = category.Slug,
             CourseTitle   = category.Title,
@@ -73,6 +73,8 @@ public class CheckoutApiController : ControllerBase
             Plan          = input.Plan,
             TotalAmount   = category.Price
         });
+        _checkout.Execute();
+        var result = _checkout.Result;
 
         return result.Success ? Ok(result) : BadRequest(result);
     }

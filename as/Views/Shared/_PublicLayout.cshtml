@@ -4,7 +4,7 @@
     bool IsActive(string a) => string.Equals(a, section, StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -42,8 +42,8 @@
                 <div class="col-60 d-flex">
                     <nav id="main-menu">
                         <ul>
-                            <li><a href="@Url.Action("Index", "Home")" class="@(IsActive("Index") ? "active" : "")">Home</a></li>
-                            <li><a href="@Url.Action("Courses", "Home")" class="@(IsActive("Courses") ? "active" : "")">Courses</a></li>
+                            <li><a href="@Url.Action("Index", "Home")" class="@(IsActive("Index") ? "active" : "")">Acasă</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")" class="@(IsActive("Courses") ? "active" : "")">Cursuri</a></li>
                             <li><a href="@Url.Action("LevelTest", "Home")" class="@(IsActive("LevelTest") ? "active" : "")">Află nivelul</a></li>
                             <li><a href="@Url.Action("Contact", "Home")" class="@(IsActive("Contact") ? "active" : "")">Contact</a></li>
                             @if (isAdmin)
@@ -84,37 +84,37 @@
                             }
                             @userName.Split(' ')[0]
                         </a>
-                        <a href="@Url.Action("Logout", "Home")" title="Sign out" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; background: #f4f6fb; color: #6c757d; text-decoration: none; vertical-align: middle;">
+                        <a href="@Url.Action("Logout", "Home")" title="Deconectare" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: 8px; border-radius: 50%; background: #f4f6fb; color: #6c757d; text-decoration: none; vertical-align: middle;">
                             <i class="fa-solid fa-right-from-bracket"></i>
                         </a>
                     }
                     else
                     {
-                        <a href="@Url.Action("Login", "Home")" class="header-btn">Sign In</a>
-                        <a href="@Url.Action("Register", "Home")" class="btn_one">Sign Up</a>
+                        <a href="@Url.Action("Login", "Home")" class="header-btn">Conectare</a>
+                        <a href="@Url.Action("Register", "Home")" class="btn_one">Înregistrare</a>
                     }
                 </div>
                 <ul class="mobile_menu">
-                    <li><a href="@Url.Action("Index", "Home")">Home</a></li>
-                    <li><a href="@Url.Action("Courses", "Home")">Courses</a></li>
+                    <li><a href="@Url.Action("Index", "Home")">Acasă</a></li>
+                    <li><a href="@Url.Action("Courses", "Home")">Cursuri</a></li>
                     <li><a href="@Url.Action("LevelTest", "Home")">Află nivelul</a></li>
                     <li><a href="@Url.Action("Contact", "Home")">Contact</a></li>
                     @if (isAuth)
                     {
                         @if (isAdmin)
                         {
-                            <li><a href="@Url.Action("Index", "Admin")">Admin Dashboard</a></li>
+                            <li><a href="@Url.Action("Index", "Admin")">Panou Admin</a></li>
                         }
                         else
                         {
                             <li><a href="@Url.Action("Profile", "Home")">Profil</a></li>
                         }
-                        <li><a href="@Url.Action("Logout", "Home")">Sign out</a></li>
+                        <li><a href="@Url.Action("Logout", "Home")">Deconectare</a></li>
                     }
                     else
                     {
-                        <li><a href="@Url.Action("Login", "Home")">Sign in</a></li>
-                        <li><a href="@Url.Action("Register", "Home")">Sign up</a></li>
+                        <li><a href="@Url.Action("Login", "Home")">Conectare</a></li>
+                        <li><a href="@Url.Action("Register", "Home")">Înregistrare</a></li>
                     }
                     @if (isAdmin)
                     {
@@ -133,34 +133,34 @@
                 <div class="col-lg-4 col-sm-6 col-xs-12">
                     <div class="single_footer">
                         <a href="@Url.Action("Index", "Home")"><img src="~/assets/img/logo.svg" alt="SpeakUp"></a>
-                        <p>SpeakUp helps learners master English — from absolute beginners to Cambridge C2. Speak with confidence in weeks, not years.</p>
+                        <p>SpeakUp ajută cursanții să stăpânească engleza — de la începători absoluti până la Cambridge C2. Vorbește cu încredere în săptămâni, nu ani.</p>
                     </div>
                 </div>
                 <div class="col-lg-2 col-sm-6 col-xs-12">
                     <div class="single_footer">
-                        <h4>Explore</h4>
+                        <h4>Explorează</h4>
                         <ul>
-                            <li><a href="@Url.Action("Courses", "Home")">Courses</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Cursuri</a></li>
                             <li><a href="@Url.Action("Contact", "Home")">Contact</a></li>
-                            <li><a href="@Url.Action("Login", "Home")">Sign in</a></li>
-                            <li><a href="@Url.Action("Register", "Home")">Sign up</a></li>
+                            <li><a href="@Url.Action("Login", "Home")">Conectare</a></li>
+                            <li><a href="@Url.Action("Register", "Home")">Înregistrare</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-lg-3 col-sm-6 col-xs-12">
                     <div class="single_footer">
-                        <h4>Levels</h4>
+                        <h4>Niveluri</h4>
                         <ul>
-                            <li><a href="@Url.Action("Courses", "Home")">Beginner — A1</a></li>
-                            <li><a href="@Url.Action("Courses", "Home")">Elementary — A2</a></li>
-                            <li><a href="@Url.Action("Courses", "Home")">Intermediate — B1/B2</a></li>
-                            <li><a href="@Url.Action("Courses", "Home")">Advanced — C1/C2</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Începător — A1</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Elementar — A2</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Intermediar — B1/B2</a></li>
+                            <li><a href="@Url.Action("Courses", "Home")">Avansat — C1/C2</a></li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-lg-3 col-sm-6 col-xs-12">
                     <div class="single_footer">
-                        <h4>Get in touch</h4>
+                        <h4>Contact</h4>
                         <div class="sf_contact"><span class="ti-map"></span><p>Chișinău, Republica Moldova</p></div>
                     </div>
                 </div>
@@ -169,7 +169,7 @@
     </div>
     <div class="foot_copy">
         <div class="footer_copyright">
-            <p>&copy; @DateTime.Now.Year SpeakUp. All rights reserved.</p>
+            <p>&copy; @DateTime.Now.Year SpeakUp. Toate drepturile rezervate.</p>
         </div>
     </div>
 

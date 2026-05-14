@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Create Account - SpeakUp</title>
+    <title>Creează cont - SpeakUp</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -32,8 +32,8 @@
 <body>
     <div class="card">
         <div class="brand">SpeakUp</div>
-        <h1>Create account</h1>
-        <p class="subtitle">Start learning today</p>
+        <h1>Creează cont</h1>
+        <p class="subtitle">Începe să înveți azi</p>
 
         @if (ViewBag.Error != null)
         {
@@ -41,13 +41,13 @@
         }
 
         <form asp-action="Register" asp-controller="Home" method="post">
-            <label>Full name</label>
+            <label>Nume complet</label>
             <input type="text" name="name" required autofocus>
 
             <label>Email</label>
             <input type="email" name="email" required>
 
-            <label>Password</label>
+            <label>Parolă</label>
             <div class="pwd-wrap">
                 <input type="password" name="password" id="pwd" required minlength="6">
                 <button type="button" class="pwd-toggle" onclick="togglePwd('pwd','eyeReg')">
@@ -55,11 +55,11 @@
                 </button>
             </div>
 
-            <button type="submit">Sign up</button>
+            <button type="submit">Creează cont</button>
         </form>
 
         <div class="footer">
-            Already have an account? <a asp-action="Login" asp-controller="Home">Sign in</a>
+            Ai deja un cont? <a asp-action="Login" asp-controller="Home">Conectează-te</a>
         </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />

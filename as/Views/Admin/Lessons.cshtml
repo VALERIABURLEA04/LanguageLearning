@@ -1,12 +1,12 @@
 @model List<sa.Models.LessonRow>
 @{
-    ViewData["Title"] = "Lessons";
+    ViewData["Title"] = "Lecții";
     Layout = "_AdminLayout";
 }
 
 <div class="admin-topbar">
-    <h1>Lessons</h1>
-    <a href="@Url.Action("CreateLesson", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Add Lesson</a>
+    <h1>Lecții</h1>
+    <a href="@Url.Action("CreateLesson", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Adaugă lecție</a>
 </div>
 
 <div class="data-card">
@@ -14,11 +14,11 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Title</th>
-                <th>Course</th>
-                <th>Duration</th>
+                <th>Titlu</th>
+                <th>Curs</th>
+                <th>Durată</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
@@ -32,7 +32,7 @@
                     <td><span class="badge-status badge-@l.Status.ToLower()">@l.Status</span></td>
                     <td>
                         <a href="@Url.Action("EditLesson", "Admin", new { id = l.Id })" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i></a>
-                        <form asp-action="DeleteLesson" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Delete lesson \'@l.Title\'?');">
+                        <form asp-action="DeleteLesson" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Ștergi lecția \'@l.Title\'?');">
                             <input type="hidden" name="id" value="@l.Id" />
                             <button type="submit" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
                         </form>

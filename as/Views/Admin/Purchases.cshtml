@@ -1,15 +1,15 @@
 @model List<sa.Models.Purchase>
 @{
-    ViewData["Title"] = "Purchases";
+    ViewData["Title"] = "Achiziții";
     Layout = "_AdminLayout";
     var total = Model.Where(p => p.Status == "Completed").Sum(p => p.Amount);
 }
 
 <div class="admin-topbar">
-    <h1>Purchase History</h1>
+    <h1>Istoric achiziții</h1>
     <div style="display: flex; gap: 20px; align-items: center;">
-        <span style="color: #6c757d;">Revenue: <b style="color: #2e7d32;">$@total</b></span>
-        <a href="@Url.Action("CreatePurchase", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Add Purchase</a>
+        <span style="color: #6c757d;">Venituri: <b style="color: #2e7d32;">$@total</b></span>
+        <a href="@Url.Action("CreatePurchase", "Admin")" class="btn-primary-orange"><i class="fa-solid fa-plus"></i> Adaugă achiziție</a>
     </div>
 </div>
 
@@ -19,12 +19,12 @@
             <tr>
                 <th>#</th>
                 <th>Student</th>
-                <th>Course</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Date</th>
+                <th>Curs</th>
+                <th>Sumă</th>
+                <th>Metodă</th>
+                <th>Data</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
@@ -40,7 +40,7 @@
                     <td><span class="badge-status badge-@p.Status.ToLower()">@p.Status</span></td>
                     <td>
                         <a href="@Url.Action("EditPurchase", "Admin", new { id = p.Id })" class="btn-action btn-edit"><i class="fa-solid fa-pen"></i></a>
-                        <form asp-action="DeletePurchase" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Delete purchase #@p.Id?');">
+                        <form asp-action="DeletePurchase" asp-controller="Admin" method="post" class="inline-form" onsubmit="return confirm('Ștergi achiziția #@p.Id?');">
                             <input type="hidden" name="id" value="@p.Id" />
                             <button type="submit" class="btn-action btn-delete"><i class="fa-solid fa-trash"></i></button>
                         </form>

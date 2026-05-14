@@ -4,15 +4,15 @@ using MyWebApplication.BusinessLogic.Payments;
 
 namespace MyWebApplication.BusinessLogic.Command;
 
-/// <summary>
-/// Command pattern — encapsulates a single checkout action.
-/// Delegates payment to a strategy resolved via PaymentStrategyFactory (Adapter behind the scenes),
-/// then persists the purchase record via IPurchaseStore.
-/// </summary>
-public class CheckoutCommand
+public class CheckoutCommand : ICommand
 {
     private readonly PaymentStrategyFactory _paymentFactory;
     private readonly IPurchaseStore         _purchases;
+
+    private CheckoutRequest? _request;
+    private int              _createdPurchaseId;
+
+    public CheckoutResult Result { get; private set; } = new();
 
     public CheckoutCommand(PaymentStrategyFactory paymentFactory, IPurchaseStore purchases)
     {
@@ -20,45 +20,62 @@ public class CheckoutCommand
         _purchases      = purchases;
     }
 
-    public CheckoutResult Execute(CheckoutRequest request)
+    public void Setup(CheckoutRequest request) => _request = request;
+
+    public void Execute()
     {
-        if (string.IsNullOrWhiteSpace(request.FullName) ||
-            string.IsNullOrWhiteSpace(request.Email))
+        if (_request is null)
         {
-            return new CheckoutResult { Success = false, Error = "Lipsesc datele obligatorii." };
+            Result = new CheckoutResult { Success = false, Error = "Comanda nu a fost inițializată." };
+            return;
         }
 
-        if (request.TotalAmount <= 0)
+        if (string.IsNullOrWhiteSpace(_request.FullName) || string.IsNullOrWhiteSpace(_request.Email))
         {
-            return new CheckoutResult { Success = false, Error = "Suma de plată este invalidă." };
+            Result = new CheckoutResult { Success = false, Error = "Lipsesc datele obligatorii." };
+            return;
         }
 
-        var amountToCharge = request.Plan?.ToLowerInvariant() == "installments"
-            ? Math.Round(request.TotalAmount / 3m, 0)
-            : request.TotalAmount;
+        if (_request.TotalAmount <= 0)
+        {
+            Result = new CheckoutResult { Success = false, Error = "Suma de plată este invalidă." };
+            return;
+        }
 
-        var payment = _paymentFactory.Resolve(request.PaymentMethod);
+        var amountToCharge = _request.Plan?.ToLowerInvariant() == "installments"
+            ? Math.Round(_request.TotalAmount / 3m, 0)
+            : _request.TotalAmount;
+
+        var payment = _paymentFactory.Resolve(_request.PaymentMethod);
         payment.Pay(amountToCharge);
 
         var receiptId = $"LNG-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
 
-        _purchases.Create(new PurchaseDto(
+        var created = _purchases.Create(new PurchaseDto(
             Id:            0,
-            StudentName:   request.FullName,
-            CourseTitle:   request.CourseTitle,
+            StudentName:   _request.FullName,
+            CourseTitle:   _request.CourseTitle,
             Amount:        amountToCharge,
             PurchaseDate:  DateTime.UtcNow,
             Status:        "Completed",
-            PaymentMethod: request.PaymentMethod ?? "card"
+            PaymentMethod: _request.PaymentMethod ?? "card"
         ));
 
-        return new CheckoutResult
+        _createdPurchaseId = created.Id;
+
+        Result = new CheckoutResult
         {
             Success       = true,
             ChargedAmount = amountToCharge,
             ReceiptId     = receiptId,
-            Message       = $"Mulțumim, {request.FullName}! Înscrierea la \"{request.CourseTitle}\" a fost înregistrată. " +
-                            $"Vei primi instrucțiunile la {request.Email}. Cod chitanță: {receiptId}."
+            Message       = $"Mulțumim, {_request.FullName}! Înscrierea la \"{_request.CourseTitle}\" a fost înregistrată. " +
+                            $"Vei primi instrucțiunile la {_request.Email}. Cod chitanță: {receiptId}."
         };
+    }
+
+    public void Undo()
+    {
+        if (_createdPurchaseId > 0)
+            _purchases.Delete(_createdPurchaseId);
     }
 }

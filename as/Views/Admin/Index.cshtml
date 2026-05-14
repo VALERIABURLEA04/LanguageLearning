@@ -1,11 +1,11 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Tablou de bord";
     Layout = "_AdminLayout";
     var recent = ViewBag.RecentPurchases as List<sa.Models.Purchase>;
 }
 
 <div class="admin-topbar">
-    <h1>Dashboard</h1>
+    <h1>Tablou de bord</h1>
     <span style="color: #6c757d;"><i class="fa-regular fa-calendar"></i> @DateTime.Now.ToString("dddd, dd MMMM yyyy")</span>
 </div>
 
@@ -13,44 +13,44 @@
     <div class="col-md-3">
         <div class="stat-card c1">
             <i class="fa-solid fa-book icon"></i>
-            <div class="label">Total Courses</div>
+            <div class="label">Total cursuri</div>
             <div class="value">@ViewBag.TotalCourses</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card c2">
             <i class="fa-solid fa-chalkboard icon"></i>
-            <div class="label">Total Lessons</div>
+            <div class="label">Total lecții</div>
             <div class="value">@ViewBag.TotalLessons</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card c3">
             <i class="fa-solid fa-users icon"></i>
-            <div class="label">Total Students</div>
+            <div class="label">Total studenți</div>
             <div class="value">@ViewBag.TotalStudents</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stat-card c4">
             <i class="fa-solid fa-dollar-sign icon"></i>
-            <div class="label">Total Revenue</div>
+            <div class="label">Total venituri</div>
             <div class="value">$@ViewBag.TotalRevenue</div>
         </div>
     </div>
 </div>
 
 <div class="data-card">
-    <h3>Recent Purchases</h3>
+    <h3>Achiziții recente</h3>
     <table class="admin-table">
         <thead>
             <tr>
                 <th>#</th>
                 <th>Student</th>
-                <th>Course</th>
-                <th>Amount</th>
-                <th>Method</th>
-                <th>Date</th>
+                <th>Curs</th>
+                <th>Sumă</th>
+                <th>Metodă</th>
+                <th>Data</th>
                 <th>Status</th>
             </tr>
         </thead>

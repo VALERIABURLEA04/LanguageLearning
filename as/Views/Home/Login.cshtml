@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sign In - SpeakUp</title>
+    <title>Conectare - SpeakUp</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -32,8 +32,8 @@
 <body>
     <div class="card">
         <div class="brand">SpeakUp</div>
-        <h1>Sign in</h1>
-        <p class="subtitle">Welcome back</p>
+        <h1>Conectare</h1>
+        <p class="subtitle">Bine ai revenit</p>
 
         @if (ViewBag.Error != null)
         {
@@ -44,7 +44,7 @@
             <label>Email</label>
             <input type="email" name="email" required autofocus>
 
-            <label>Password</label>
+            <label>Parolă</label>
             <div class="pwd-wrap">
                 <input type="password" name="password" id="pwd" required>
                 <button type="button" class="pwd-toggle" onclick="togglePwd('pwd','eyeLogin')">
@@ -52,11 +52,11 @@
                 </button>
             </div>
 
-            <button type="submit">Sign in</button>
+            <button type="submit">Intră în cont</button>
         </form>
 
         <div class="footer">
-            No account? <a asp-action="Register" asp-controller="Home">Sign up</a>
+            Nu ai cont? <a asp-action="Register" asp-controller="Home">Înregistrează-te</a>
         </div>
     </div>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />

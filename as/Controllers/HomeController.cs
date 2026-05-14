@@ -144,7 +144,7 @@ public class HomeController : Controller
         var course = _courseQuery.FindById(id);
         if (course is null) return NotFound();
 
-        var result = _checkout.Execute(new CheckoutRequest
+        _checkout.Setup(new CheckoutRequest
         {
             CategorySlug  = course.Id.ToString(),
             CourseTitle   = course.Title,
@@ -155,6 +155,8 @@ public class HomeController : Controller
             Plan          = plan,
             TotalAmount   = course.Price
         });
+        _checkout.Execute();
+        var result = _checkout.Result;
 
         if (!result.Success)
         {
