@@ -206,6 +206,7 @@ using (var scope = app.Services.CreateScope())
             db.Courses.Add(course);
     }
     db.SaveChanges();
+
 }
 
 if (!app.Environment.IsDevelopment())
