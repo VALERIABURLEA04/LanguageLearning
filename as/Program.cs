@@ -128,6 +128,84 @@ using (var scope = app.Services.CreateScope())
         }
         db.SaveChanges();
     }
+
+    // Seed default courses (skip if title already exists)
+    var seedCourses = new[]
+    {
+        new CourseRow {
+            Title = "Engleză pentru adulți",
+            Language = "English", Level = "A1 — B2",
+            Price = 2990, OldPrice = 3990,
+            Description = "Curs complet pentru adulți care vor să vorbească engleză cu încredere.",
+            LongDescription = "Programul nostru pentru adulți îmbină gramatică practică, vocabular esențial și conversații reale conduse de profesori certificați CELTA/DELTA. Grupuri mici (max 6 persoane) garantează atenție individuală la fiecare lecție.",
+            BackgroundColor = "#FF6B35", Icon = "📚",
+            Duration = "12 săptămâni", Frequency = "2 lecții/săptămână",
+            PriceNote = "Disponibil și în 3 rate fără dobândă",
+            FeaturesText = "Grupuri mici (max 6 cursanți)\nProfesori certificați CELTA/DELTA\nMateriale Cambridge incluse\nFeedback 1:1 săptămânal\nCertificat de absolvire"
+        },
+        new CourseRow {
+            Title = "Engleză pentru copii",
+            Language = "English", Level = "A1 — A2",
+            Price = 1990, OldPrice = 0,
+            Description = "Lecții interactive și jucăușe pentru copii cu vârste între 6–12 ani.",
+            LongDescription = "Copiii învață engleză prin jocuri, cântece și activități creative adaptate vârstei. Profesorii noștri specializați în educație timpurie creează un mediu sigur și distractiv în care copilul capătă drag de limbă.",
+            BackgroundColor = "#0CA678", Icon = "🎮",
+            Duration = "10 săptămâni", Frequency = "2 lecții/săptămână",
+            PriceNote = "Vârstă recomandată: 6–12 ani",
+            FeaturesText = "Metode interactive și jocuri educative\nGrupe de maxim 5 copii\nProfesori specializați în lucrul cu copiii\nTeme scurte și distractive\nRaport lunar pentru părinți"
+        },
+        new CourseRow {
+            Title = "Engleză pentru adolescenți",
+            Language = "English", Level = "A2 — B1",
+            Price = 2490, OldPrice = 0,
+            Description = "Program adaptat pentru tineri 13–17 ani — vorbire, scriere și cultură.",
+            LongDescription = "Adolescenții explorează engleza prin teme relevante lor: muzică, film, social media, sport și cultură. Curriculum-ul B1 îi pregătește și pentru cerințele școlare și examenele internaționale.",
+            BackgroundColor = "#7B2FBE", Icon = "🎓",
+            Duration = "12 săptămâni", Frequency = "2 lecții/săptămână",
+            PriceNote = "Potrivit și ca pregătire suplimentară la școală",
+            FeaturesText = "Teme actuale și relevante pentru tineri\nDezbatere și prezentări în engleză\nGrupe de vârstă omogenă\nPregătire pentru cerințe școlare\nActivități online interactive"
+        },
+        new CourseRow {
+            Title = "Lecții individuale de engleză",
+            Language = "English", Level = "Orice nivel",
+            Price = 450, OldPrice = 0,
+            Description = "Sesiuni 1:1 personalizate după obiectivele, nivelul și programul tău.",
+            LongDescription = "Cel mai rapid mod de a avansa: tutorele se adaptează 100% nevoilor tale. Alegi obiectivul (conversație, business, examen) și programul. Nici un minut pierdut pe ce știi deja.",
+            BackgroundColor = "#00B4D8", Icon = "👤",
+            Duration = "Flexibil", Frequency = "La alegere",
+            PriceNote = "Preț per lecție de 60 min · Pachete disponibile",
+            FeaturesText = "Program 100% flexibil\nCurriculum personalizat pe obiectivele tale\nFeedback imediat și detaliat\nMateriale adaptate nivelului\nPosibilitate de sesiuni online sau fizic"
+        },
+        new CourseRow {
+            Title = "Pregătire pentru BAC",
+            Language = "English", Level = "B1 — B2",
+            Price = 2990, OldPrice = 0,
+            Description = "Intensiv de engleză orientat 100% spre structura și cerințele examenului BAC.",
+            LongDescription = "Parcurgem sistematic toate subiectele din programa BAC: reading comprehension, essay writing, grammar și listening. Exerciții din examene anterioare, simulări complete și strategii de punctaj maxim.",
+            BackgroundColor = "#FFB800", Icon = "📝",
+            Duration = "16 săptămâni", Frequency = "3 lecții/săptămână",
+            PriceNote = "Recomandat din clasa a 10-a",
+            FeaturesText = "Structură aliniată 100% la programa BAC\nSimulări de examen periodice\nEseuri corectate cu feedback detaliat\nStrategii pentru timp și punctaj\nSuport și în afara orelor"
+        },
+        new CourseRow {
+            Title = "Pregătire TOEFL",
+            Language = "English", Level = "B2 — C1",
+            Price = 3990, OldPrice = 4990,
+            Description = "Pregătire completă pentru TOEFL iBT — Reading, Listening, Speaking, Writing.",
+            LongDescription = "Cursul acoperă toate cele 4 secțiuni TOEFL iBT cu strategii specifice fiecăreia. Practică pe teste reale, înregistrări Speaking evaluate, eseuri Writing cu feedback și simulări timed la fiecare 2 săptămâni.",
+            BackgroundColor = "#1B3A6B", Icon = "🏆",
+            Duration = "14 săptămâni", Frequency = "3 lecții/săptămână",
+            PriceNote = "Include acces la bancă de teste originale",
+            FeaturesText = "Toate cele 4 secțiuni TOEFL iBT\nStrategii dovedite pentru scor 90+\nSimulări complete timed\nSpeaking evaluat cu înregistrări\nEseuri Writing corectate individual"
+        },
+    };
+
+    foreach (var course in seedCourses)
+    {
+        if (!db.Courses.Any(c => c.Title == course.Title))
+            db.Courses.Add(course);
+    }
+    db.SaveChanges();
 }
 
 if (!app.Environment.IsDevelopment())
